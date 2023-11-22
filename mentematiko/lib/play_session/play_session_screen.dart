@@ -17,7 +17,8 @@ import '../style/confetti.dart';
 import '../style/my_button.dart';
 import '../style/palette.dart';
 import 'board_widget.dart';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../multiplayer/firestore_controller.dart';
 /// This widget defines the entirety of the screen that the player sees when
 /// they are playing a level.
 ///
@@ -32,6 +33,8 @@ class PlaySessionScreen extends StatefulWidget {
 
 class _PlaySessionScreenState extends State<PlaySessionScreen> {
   static final _log = Logger('PlaySessionScreen');
+  
+  FirestoreController? _firestoreController;
 
   static const _celebrationDuration = Duration(milliseconds: 2000);
 
@@ -110,6 +113,7 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
 
   @override
   void dispose() {
+    _firestoreController?.dispose();
     _boardState.dispose();
     super.dispose();
   }
@@ -119,6 +123,16 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
     super.initState();
     _startOfPlay = DateTime.now();
     _boardState = BoardState(onWin: _playerWon);
+    final firestore = context.read<FirebaseFirestore?>();
+    if (firestore == null) {
+      _log.warning("Firestore instance wasn't provided. "
+      "Running without _firestoreController.");
+    } else {
+      _firestoreController = FirestoreController(
+        instance: firestore,
+        boardState: _boardState,
+      );
+    }
   }
 
   Future<void> _playerWon() async {

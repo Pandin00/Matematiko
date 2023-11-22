@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "94206890947",
+    "project_id": "mentematiko",
+    "storage_bucket": "mentematiko.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:94206890947:android:947e954099bf5b9726a376",
+        "android_client_info": {
+          "package_name": "com.example.card"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCSDozA_E7JlpbzOD3WVUnEjAxfGQb0NPk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
