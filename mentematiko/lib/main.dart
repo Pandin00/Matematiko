@@ -4,6 +4,9 @@
 
 import 'dart:developer' as dev;
 
+import 'package:card/firebase_options.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -17,7 +20,12 @@ import 'router.dart';
 import 'settings/settings.dart';
 import 'style/palette.dart';
 
-void main() async {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   // Basic logging setup.
   Logger.root.level = kDebugMode ? Level.FINE : Level.INFO;
   Logger.root.onRecord.listen((record) {
@@ -38,7 +46,12 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  runApp(MyApp());
+  runApp(
+    Provider.value(
+      value: FirebaseFirestore.instance,
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
