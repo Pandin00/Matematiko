@@ -2,6 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:card/main_menu/login.dart';
+import 'package:card/main_menu/login_or_register_screen.dart';
+import 'package:card/main_menu/register.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -22,6 +25,37 @@ final router = GoRouter(
       path: '/',
       builder: (context, state) => const MainMenuScreen(key: Key('main menu')),
       routes: [
+        GoRoute(
+          path: 'loginOrRegister',
+          pageBuilder: (context, state) => buildMyTransition<void>(
+            key: ValueKey('loginOrRegister'),
+            color: context.watch<Palette>().backgroundPlaySession,
+            child: const LoginOrRegister(
+              key: Key('level selection'),
+            ),
+          ),
+          routes: [
+            GoRoute(
+              path: 'login',
+              pageBuilder: (context, state) => buildMyTransition<void>(
+                key: ValueKey('login'),
+                color: context.watch<Palette>().backgroundPlaySession,
+                child: LoginPage(
+                ),
+              )
+            ),
+            GoRoute(
+              path: 'register',
+              pageBuilder: (context, state) => buildMyTransition<void>(
+                key: ValueKey('register'),
+                color: context.watch<Palette>().backgroundPlaySession,
+                child: RegisterPage(
+                  key: Key('registration')
+                ),
+              )
+            )
+          ],
+        ),
         GoRoute(
           path: 'play',
           pageBuilder: (context, state) => buildMyTransition<void>(
