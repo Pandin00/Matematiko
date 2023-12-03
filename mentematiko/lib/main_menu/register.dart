@@ -1,5 +1,7 @@
 import 'package:card/style/my_button.dart';
+import 'package:card/style/responsive_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class RegisterPage extends StatefulWidget {
  const RegisterPage({required Key key}) : super(key: key);
@@ -18,12 +20,13 @@ class _RegisterPageState extends State<RegisterPage> {
       appBar: AppBar(
         title: Text('Registrazione'),
       ),
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
+      body: ResponsiveScreen(
+        squarishMainArea: Center(
         child: Form(
           key: _formKey,
           child: Column(
             children: <Widget>[
+              _gap,
               TextFormField(
                 decoration: InputDecoration(labelText: 'Codice Fiscale'),
                 validator: (value) {
@@ -78,6 +81,7 @@ class _RegisterPageState extends State<RegisterPage> {
                  return null;
                 },
               ),
+              _gap,
               Padding(
                 padding: EdgeInsets.symmetric(vertical: 16.0),
                 child: MyButton(
@@ -86,6 +90,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('Registrazione completata')),
                       );
+                      GoRouter.of(context).go('/loginOrRegister/userMenu');
                     }
                   },
                   child: Text('Registrati'),
@@ -94,7 +99,10 @@ class _RegisterPageState extends State<RegisterPage> {
             ]
           )
         )
+      ), rectangularMenuArea: _gap,
       )
     );
   }
+
+  static const _gap = SizedBox(height: 100);
 }

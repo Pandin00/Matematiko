@@ -5,6 +5,8 @@
 import 'package:card/main_menu/login.dart';
 import 'package:card/main_menu/login_or_register_screen.dart';
 import 'package:card/main_menu/register.dart';
+import 'package:card/user_pages/tournament_view.dart';
+import 'package:card/user_pages/user_menu.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -41,6 +43,7 @@ final router = GoRouter(
                 key: ValueKey('login'),
                 color: context.watch<Palette>().backgroundPlaySession,
                 child: LoginPage(
+                  key: Key('login'),
                 ),
               )
             ),
@@ -51,6 +54,25 @@ final router = GoRouter(
                 color: context.watch<Palette>().backgroundPlaySession,
                 child: RegisterPage(
                   key: Key('registration')
+                ),
+              )
+            ),
+            GoRoute(
+              path: 'userMenu',
+              pageBuilder: (context, state) => buildMyTransition<void>(
+                key: ValueKey('userMenu'),
+                color: context.watch<Palette>().backgroundPlaySession,
+                child: UserMenu(
+                  key: Key('userMenu')
+                ),
+              )
+            ),
+            GoRoute(
+              path: 'tournamentsView',
+              pageBuilder: (context, state) => buildMyTransition<void>(
+                key: ValueKey('tournamentsView'),
+                color: context.watch<Palette>().backgroundPlaySession,
+                child: TournamentsView(
                 ),
               )
             )

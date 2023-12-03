@@ -1,5 +1,6 @@
 import 'package:card/style/my_button.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -38,9 +39,10 @@ class _LoginPageState extends State<LoginPage> {
               obscureText: true,
             ),
             SizedBox(height: 16.0),
+            _gap,
             MyButton(
               onPressed: () {
-                Navigator.pop(context);
+                GoRouter.of(context).go('/loginOrRegister/userMenu');
               },
               child: Text('Login'),
             ),
@@ -49,4 +51,6 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
+
+  static const _gap = SizedBox(height: 120);
 }
