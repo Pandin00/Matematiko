@@ -28,6 +28,15 @@ class _RegisterPageState extends State<RegisterPage> {
             children: <Widget>[
               _gap,
               TextFormField(
+                decoration: InputDecoration(labelText: 'Email'),
+                validator: (value) {
+                 if (value!.isEmpty) {
+                    return 'Please enter your email';
+                 }
+                 return null;
+                },
+              ),
+              TextFormField(
                 decoration: InputDecoration(labelText: 'Codice Fiscale'),
                 validator: (value) {
                  if (value!.isEmpty) {

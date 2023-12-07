@@ -1,4 +1,5 @@
 import 'package:card/style/my_button.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -13,7 +14,9 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-
+  //da capire come fare l'inject stile firestoreController
+  
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,6 +45,7 @@ class _LoginPageState extends State<LoginPage> {
             _gap,
             MyButton(
               onPressed: () {
+                
                 GoRouter.of(context).go('/loginOrRegister/userMenu');
               },
               child: Text('Login'),
