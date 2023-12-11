@@ -6,8 +6,10 @@ import 'package:card/main_menu/login.dart';
 import 'package:card/main_menu/login_or_register_screen.dart';
 import 'package:card/main_menu/register.dart';
 import 'package:card/services/login_register_service.dart';
+import 'package:card/user_pages/new_tournament.dart';
 import 'package:card/user_pages/tournament_view.dart';
 import 'package:card/user_pages/user_menu.dart';
+import 'package:card/user_pages/users_view.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -29,95 +31,98 @@ final router = GoRouter(
       builder: (context, state) => const MainMenuScreen(key: Key('main menu')),
       routes: [
         GoRoute(
-          path: 'loginOrRegister',
-          pageBuilder: (context, state) => buildMyTransition<void>(
-            key: ValueKey('loginOrRegister'),
-            color: context.watch<Palette>().backgroundPlaySession,
-            child: const LoginOrRegister(
-              key: Key('level selection'),
-            ),
-          ),
-          routes: [
-            GoRoute(
-              path: 'login',
-              pageBuilder: (context, state) => buildMyTransition<void>(
-                key: ValueKey('login'),
-                color: context.watch<Palette>().backgroundPlaySession,
-                child: LoginPage(
-                  key: Key('login'),
-                  loginService: context.read<LoginService>(),
-                ),
-              )
-            ),
-            GoRoute(
-              path: 'register',
-              pageBuilder: (context, state) => buildMyTransition<void>(
-                key: ValueKey('register'),
-                color: context.watch<Palette>().backgroundPlaySession,
-                child: RegisterPage(
-                  key: Key('registration')
-                ),
-              )
-            ),
-            GoRoute(
-              path: 'userMenu',
-              pageBuilder: (context, state) => buildMyTransition<void>(
-                key: ValueKey('userMenu'),
-                color: context.watch<Palette>().backgroundPlaySession,
-                child: UserMenu(
-                  key: Key('userMenu')
-                ),
-              )
-            ),
-            GoRoute(
-              path: 'tournamentsView',
-              pageBuilder: (context, state) => buildMyTransition<void>(
-                key: ValueKey('tournamentsView'),
-                color: context.watch<Palette>().backgroundPlaySession,
-                child: TournamentsView(
-                ),
-              )
-            )
-          ],
-        ),
-        GoRoute(
-          path: 'play',
-          pageBuilder: (context, state) => buildMyTransition<void>(
-            key: ValueKey('play'),
-            color: context.watch<Palette>().backgroundPlaySession,
-            child: const PlaySessionScreen(
-              key: Key('level selection'),
-            ),
-          ),
-          routes: [
-            GoRoute(
-              path: 'won',
-              redirect: (context, state) {
-                if (state.extra == null) {
-                  // Trying to navigate to a win screen without any data.
-                  // Possibly by using the browser's back button.
-                  return '/';
-                }
-
-                // Otherwise, do not redirect.
-                return null;
-              },
-              pageBuilder: (context, state) {
-                final map = state.extra! as Map<String, dynamic>;
-                final score = map['score'] as Score;
-
-                return buildMyTransition<void>(
-                  key: ValueKey('won'),
+            path: 'loginOrRegister',
+            pageBuilder: (context, state) => buildMyTransition<void>(
+                  key: ValueKey('loginOrRegister'),
                   color: context.watch<Palette>().backgroundPlaySession,
-                  child: WinGameScreen(
-                    score: score,
-                    key: const Key('win game'),
+                  child: const LoginOrRegister(
+                    key: Key('level selection'),
                   ),
-                );
-              },
-            )
-          ],
-        ),
+                )),
+        GoRoute(
+            path: 'login',
+            pageBuilder: (context, state) => buildMyTransition<void>(
+                  key: ValueKey('login'),
+                  color: context.watch<Palette>().backgroundPlaySession,
+                  child: LoginPage(
+                    key: Key('login'),
+                    loginService: context.read<LoginService>(),
+                  ),
+                )),
+        GoRoute(
+            path: 'register',
+            pageBuilder: (context, state) => buildMyTransition<void>(
+                  key: ValueKey('register'),
+                  color: context.watch<Palette>().backgroundPlaySession,
+                  child: RegisterPage(key: Key('registration')),
+                )),
+        GoRoute(
+            path: 'userMenu',
+            pageBuilder: (context, state) => buildMyTransition<void>(
+                  key: ValueKey('userMenu'),
+                  color: context.watch<Palette>().backgroundPlaySession,
+                  child: UserMenu(key: Key('userMenu')),
+                ),
+            routes: [
+              GoRoute(
+                  path: 'newTournament',
+                  pageBuilder: (context, state) => buildMyTransition<void>(
+                        key: ValueKey('login'),
+                        color: context.watch<Palette>().backgroundPlaySession,
+                        child: NewTournamentPage(),
+                      )),
+              GoRoute(
+                  path: 'tournamentsView',
+                  pageBuilder: (context, state) => buildMyTransition<void>(
+                        key: ValueKey('tournamentsView'),
+                        color: context.watch<Palette>().backgroundPlaySession,
+                        child: TournamentsView(),
+                      )),
+              GoRoute(
+                  path: 'usersView',
+                  pageBuilder: (context, state) => buildMyTransition<void>(
+                        key: ValueKey('usersView'),
+                        color: context.watch<Palette>().backgroundPlaySession,
+                        child: UsersPage(),
+                      )),
+              GoRoute(
+                path: 'play',
+                pageBuilder: (context, state) => buildMyTransition<void>(
+                  key: ValueKey('play'),
+                  color: context.watch<Palette>().backgroundPlaySession,
+                  child: const PlaySessionScreen(
+                    key: Key('level selection'),
+                  ),
+                ),
+                routes: [
+                  GoRoute(
+                    path: 'won',
+                    redirect: (context, state) {
+                      if (state.extra == null) {
+                        // Trying to navigate to a win screen without any data.
+                        // Possibly by using the browser's back button.
+                        return '/';
+                      }
+                      // Otherwise, do not redirect.
+                      return null;
+                    },
+                    pageBuilder: (context, state) {
+                      final map = state.extra! as Map<String, dynamic>;
+                      final score = map['score'] as Score;
+
+                      return buildMyTransition<void>(
+                        key: ValueKey('won'),
+                        color: context.watch<Palette>().backgroundPlaySession,
+                        child: WinGameScreen(
+                          score: score,
+                          key: const Key('win game'),
+                        ),
+                      );
+                    },
+                  )
+                ],
+              ),
+            ]),
         GoRoute(
           path: 'settings',
           builder: (context, state) =>

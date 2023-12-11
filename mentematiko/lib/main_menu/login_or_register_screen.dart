@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class LoginOrRegister extends StatelessWidget {
-
   const LoginOrRegister({super.key});
 
   @override
@@ -15,14 +14,14 @@ class LoginOrRegister extends StatelessWidget {
           children: <Widget>[
             MyButton(
               onPressed: () {
-                GoRouter.of(context).go('/loginOrRegister/login');
+                GoRouter.of(context).go('/login');
               },
               child: Text('Login'),
             ),
             SizedBox(height: 10),
             MyButton(
               onPressed: () {
-                GoRouter.of(context).go('/loginOrRegister/register');
+                GoRouter.of(context).go('/register');
               },
               child: Text('Register'),
             ),

@@ -5,19 +5,16 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class UserMenu extends StatelessWidget {
-  
-
   const UserMenu({super.key});
-  
-  
+
   @override
   Widget build(BuildContext context) {
-  User? user;
-   final Map<String, dynamic>? args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    User? user;
+    final Map<String, dynamic>? args =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
     if (args != null) {
       user = args['user'];
     }
-
 
     return MaterialApp(
       home: DefaultTabController(
@@ -28,15 +25,15 @@ class UserMenu extends StatelessWidget {
           ),
           body: Builder(
             builder: (BuildContext context) {
-              if(user?.role == ROLE.arb){
+              if (user?.role == ROLE.arb) {
                 return AdminUserMenu();
               } else {
-                return NormalUserMenu(key: key,user: user);
+                return NormalUserMenu(key: key, user: user);
               }
             },
           ),
         ),
-      )
+      ),
     );
   }
 }
@@ -50,21 +47,24 @@ class AdminUserMenu extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           MyButton(
-            onPressed: () {
-            },
+            onPressed: () {},
             child: Text('Aggiungi utente'),
           ),
           MyButton(
-            onPressed: () {},
+            onPressed: () {
+              GoRouter.of(context).go('/userMenu/usersView');
+            },
             child: Text('Lista utenti'),
           ),
           MyButton(
-            onPressed: () {},
+            onPressed: () {
+              GoRouter.of(context).go('/userMenu/newTournament');
+            },
             child: Text('Crea torneo'),
           ),
           MyButton(
             onPressed: () {
-              GoRouter.of(context).go('/loginOrRegister/tournamentsView');
+              GoRouter.of(context).go('/userMenu/tournamentsView');
             },
             child: Text('Visualizza tornei'),
           ),
@@ -82,12 +82,10 @@ class AdminUserMenu extends StatelessWidget {
   }
 }
 
-
 class NormalUserMenu extends StatelessWidget {
-
   User? user;
 
-  NormalUserMenu({super.key,this.user});
+  NormalUserMenu({super.key, this.user});
 
   @override
   Widget build(BuildContext context) {
@@ -108,7 +106,7 @@ class NormalUserMenu extends StatelessWidget {
           ),
           MyButton(
             onPressed: () {
-              GoRouter.of(context).go('/loginOrRegister/tournamentsView');
+              GoRouter.of(context).go('/userMenu/tournamentsView');
             },
             child: Text('Guarda Classifica'),
           ),
@@ -116,6 +114,6 @@ class NormalUserMenu extends StatelessWidget {
       ),
     );
   }
-  
+
   static const _gap = SizedBox(height: 120);
 }
