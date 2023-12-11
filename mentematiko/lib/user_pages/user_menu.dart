@@ -1,14 +1,24 @@
+import 'package:card/models/role.dart';
+import 'package:card/models/user.dart';
 import 'package:card/style/my_button.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class UserMenu extends StatelessWidget {
+  
+
   const UserMenu({super.key});
-  //chiamata BE per prendere dati utente
-  static const isAdmin = true;
+  
   
   @override
   Widget build(BuildContext context) {
+  User? user;
+   final Map<String, dynamic>? args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    if (args != null) {
+      user = args['user'];
+    }
+
+
     return MaterialApp(
       home: DefaultTabController(
         length: 2,
@@ -18,10 +28,10 @@ class UserMenu extends StatelessWidget {
           ),
           body: Builder(
             builder: (BuildContext context) {
-              if(isAdmin){
+              if(user?.role == ROLE.arb){
                 return AdminUserMenu();
               } else {
-                return NormalUserMenu();
+                return NormalUserMenu(key: key,user: user);
               }
             },
           ),
@@ -31,6 +41,7 @@ class UserMenu extends StatelessWidget {
   }
 }
 
+/* da rimuovere */
 class AdminUserMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -71,7 +82,13 @@ class AdminUserMenu extends StatelessWidget {
   }
 }
 
+
 class NormalUserMenu extends StatelessWidget {
+
+  User? user;
+
+  NormalUserMenu({super.key,this.user});
+
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -82,7 +99,8 @@ class NormalUserMenu extends StatelessWidget {
             backgroundImage: NetworkImage('https://example.com/image.jpg'),
             radius: 50,
           ),
-          Text('Username'),
+          Text(user?.email ?? 'wrong data'),
+          Text(user?.cf ?? 'wrong data'),
           _gap,
           MyButton(
             onPressed: () {},

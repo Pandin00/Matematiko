@@ -61,7 +61,7 @@ class _LoginPageState extends State<LoginPage> {
                   login.then((value) => {
                     if(value.email.isNotEmpty){
                         //da risolvere il passaggio  di parametri
-                        GoRouter.of(context).go('/loginOrRegister/userMenu',: {
+                        GoRouter.of(context).go('/loginOrRegister/userMenu',extra: {
                                   'user': value
                       })
                     }
