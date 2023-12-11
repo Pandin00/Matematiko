@@ -1,0 +1,4 @@
+enum ROLE{
+    user,
+    arb
+}

@@ -5,6 +5,7 @@
 import 'package:card/main_menu/login.dart';
 import 'package:card/main_menu/login_or_register_screen.dart';
 import 'package:card/main_menu/register.dart';
+import 'package:card/services/login_register_service.dart';
 import 'package:card/user_pages/tournament_view.dart';
 import 'package:card/user_pages/user_menu.dart';
 import 'package:flutter/foundation.dart';
@@ -44,6 +45,7 @@ final router = GoRouter(
                 color: context.watch<Palette>().backgroundPlaySession,
                 child: LoginPage(
                   key: Key('login'),
+                  loginService: context.read<LoginService>(),
                 ),
               )
             ),

@@ -1,24 +1,29 @@
+import 'package:card/main_menu/popup_util.dart';
+import 'package:card/services/login_register_service.dart';
 import 'package:card/style/my_button.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+  final LoginService loginService;
+
+  const LoginPage({super.key,required this.loginService});
+
 
  @override
  // ignore: library_private_types_in_public_api
  _LoginPageState createState() => _LoginPageState();
+
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final TextEditingController _usernameController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  //da capire come fare l'inject stile firestoreController
-  
-  
+  final TextEditingController _usernameText = TextEditingController();
+  final TextEditingController _passwordText = TextEditingController();
+ 
   @override
   Widget build(BuildContext context) {
+   final internal=context;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Login'),
@@ -29,13 +34,13 @@ class _LoginPageState extends State<LoginPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             TextField(
-              controller: _usernameController,
+              controller: _usernameText,
               decoration: InputDecoration(
-                labelText: 'Codice Fiscale',
+                labelText: 'Email',
               ),
             ),
             TextField(
-              controller: _passwordController,
+              controller: _passwordText,
               decoration: InputDecoration(
                 labelText: 'Password',
               ),
@@ -44,9 +49,31 @@ class _LoginPageState extends State<LoginPage> {
             SizedBox(height: 16.0),
             _gap,
             MyButton(
-              onPressed: () {
-                
-                GoRouter.of(context).go('/loginOrRegister/userMenu');
+              onPressed: () { 
+                if(_usernameText.text.isEmpty || _passwordText.text.isEmpty){
+                  PopupUtil.showPopup(
+                      context: context,
+                      title: 'Errore',
+                      content: 'Inserisci username e password',
+                    );
+                }else{
+                  var login = widget.loginService.login(_usernameText.text, _passwordText.text);
+                  login.then((value) => {
+                    if(value.email.isNotEmpty){
+                        //da risolvere il passaggio  di parametri
+                        GoRouter.of(context).go('/loginOrRegister/userMenu',: {
+                                  'user': value
+                      })
+                    }
+                    else
+                         PopupUtil.showPopup(
+                                              context: internal,
+                                              title: 'Errore',
+                                              content: 'Login fallito',
+                                            )
+                     
+                  });
+                }  
               },
               child: Text('Login'),
             ),
