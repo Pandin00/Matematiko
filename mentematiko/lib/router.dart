@@ -5,12 +5,14 @@
 import 'package:card/main_menu/login.dart';
 import 'package:card/main_menu/login_or_register_screen.dart';
 import 'package:card/main_menu/register.dart';
+import 'package:card/models/user.dart';
 import 'package:card/services/login_register_service.dart';
 import 'package:card/user_pages/new_tournament.dart';
 import 'package:card/user_pages/tournament_view.dart';
 import 'package:card/user_pages/user_menu.dart';
 import 'package:card/user_pages/users_view.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
@@ -58,11 +60,15 @@ final router = GoRouter(
                 )),
         GoRoute(
             path: 'userMenu',
-            pageBuilder: (context, state) => buildMyTransition<void>(
-                  key: ValueKey('userMenu'),
+            pageBuilder: (context, state) {
+                UserMenu menu=UserMenu(key:Key('userMenu'),user:state.extra as User );
+                return buildMyTransition(
+                  child: menu, 
                   color: context.watch<Palette>().backgroundPlaySession,
-                  child: UserMenu(key: Key('userMenu')),
-                ),
+                  key: ValueKey('userMenu')
+                );
+                
+        },
             routes: [
               GoRoute(
                   path: 'newTournament',

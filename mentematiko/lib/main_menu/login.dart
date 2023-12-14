@@ -60,9 +60,10 @@ class _LoginPageState extends State<LoginPage> {
                   login.then((value) => {
                         if (value.email.isNotEmpty)
                           {
+                            
                             //da risolvere il passaggio  di parametri
                             GoRouter.of(context)
-                                .go('/userMenu', extra: {'user': value})
+                                .go('/userMenu', extra: value)
                           }
                         else
                           PopupUtil.showPopup(

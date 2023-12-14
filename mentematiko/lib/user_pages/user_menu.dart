@@ -5,17 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class UserMenu extends StatelessWidget {
-  const UserMenu({super.key});
+  final User user;
+  
+  const UserMenu({required super.key,required this.user});
 
   @override
   Widget build(BuildContext context) {
-    User? user;
-    final Map<String, dynamic>? args =
-        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-    if (args != null) {
-      user = args['user'];
-    }
-
     return MaterialApp(
       home: DefaultTabController(
         length: 2,
@@ -25,7 +20,7 @@ class UserMenu extends StatelessWidget {
           ),
           body: Builder(
             builder: (BuildContext context) {
-              if (user?.role == ROLE.arb) {
+              if (user.role == ROLE.arb) {
                 return AdminUserMenu();
               } else {
                 return NormalUserMenu(key: key, user: user);
