@@ -6,8 +6,8 @@ import 'package:go_router/go_router.dart';
 
 class UserMenu extends StatelessWidget {
   final User user;
-  
-  const UserMenu({required super.key,required this.user});
+
+  const UserMenu({required super.key, required this.user});
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +33,6 @@ class UserMenu extends StatelessWidget {
   }
 }
 
-/* da rimuovere */
 class AdminUserMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -94,9 +93,11 @@ class NormalUserMenu extends StatelessWidget {
           ),
           Text(user?.email ?? 'wrong data'),
           Text(user?.cf ?? 'wrong data'),
-          _gap,
+          getGapHeight(context),
           MyButton(
-            onPressed: () {},
+            onPressed: () {
+              GoRouter.of(context).go('/userMenu/play');
+            },
             child: Text('Entra in partita'),
           ),
           MyButton(
@@ -110,5 +111,16 @@ class NormalUserMenu extends StatelessWidget {
     );
   }
 
-  static const _gap = SizedBox(height: 120);
+  static SizedBox getGapHeight(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    double screenHeight = MediaQuery.of(context).size.height;
+    var padding;
+    if (screenHeight > 718) {
+      padding = mediaQuery.size.width * 0.03;
+    } else {
+      padding = mediaQuery.size.width * 0;
+    }
+
+    return SizedBox(height: padding);
+  }
 }

@@ -45,7 +45,7 @@ class _LoginPageState extends State<LoginPage> {
               obscureText: true,
             ),
             SizedBox(height: 16.0),
-            _gap,
+            getGapHeight(context),
             MyButton(
               onPressed: () {
                 if (_usernameText.text.isEmpty || _passwordText.text.isEmpty) {
@@ -60,10 +60,8 @@ class _LoginPageState extends State<LoginPage> {
                   login.then((value) => {
                         if (value.email.isNotEmpty)
                           {
-                            
                             //da risolvere il passaggio  di parametri
-                            GoRouter.of(context)
-                                .go('/userMenu', extra: value)
+                            GoRouter.of(context).go('/userMenu', extra: value)
                           }
                         else
                           PopupUtil.showPopup(
@@ -82,5 +80,16 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  static const _gap = SizedBox(height: 120);
+  static SizedBox getGapHeight(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    double screenHeight = MediaQuery.of(context).size.height;
+    var padding;
+    if (screenHeight > 718) {
+      padding = mediaQuery.size.width * 0.03;
+    } else {
+      padding = mediaQuery.size.width * 0;
+    }
+
+    return SizedBox(height: padding);
+  }
 }

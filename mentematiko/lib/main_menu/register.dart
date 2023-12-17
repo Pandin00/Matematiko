@@ -25,7 +25,7 @@ class _RegisterPageState extends State<RegisterPage> {
               child: Form(
                   key: _formKey,
                   child: Column(children: <Widget>[
-                    _gap,
+                    getGapHeight(context),
                     TextFormField(
                       decoration: InputDecoration(labelText: 'Email'),
                       validator: (value) {
@@ -66,7 +66,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       decoration: InputDecoration(labelText: 'Provincia'),
                       validator: (value) {
                         if (value!.isEmpty) {
-                          return 'Please enter your cognome';
+                          return 'Please enter your Provincia';
                         }
                         return null;
                       },
@@ -75,7 +75,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       decoration: InputDecoration(labelText: 'Istituto'),
                       validator: (value) {
                         if (value!.isEmpty) {
-                          return 'Please enter your cognome';
+                          return 'Please enter your Istituto';
                         }
                         return null;
                       },
@@ -84,12 +84,12 @@ class _RegisterPageState extends State<RegisterPage> {
                       decoration: InputDecoration(labelText: 'Password'),
                       validator: (value) {
                         if (value!.isEmpty) {
-                          return 'Please enter your cognome';
+                          return 'Please enter your Password';
                         }
                         return null;
                       },
                     ),
-                    _gap,
+                    getGapHeight(context),
                     Padding(
                       padding: EdgeInsets.symmetric(vertical: 16.0),
                       child: MyButton(
@@ -106,9 +106,20 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                     )
                   ]))),
-          rectangularMenuArea: _gap,
+          rectangularMenuArea: getGapHeight(context),
         ));
   }
 
-  static const _gap = SizedBox(height: 100);
+  static SizedBox getGapHeight(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    double screenHeight = MediaQuery.of(context).size.height;
+    var padding;
+    if (screenHeight > 718) {
+      padding = mediaQuery.size.width * 0.03;
+    } else {
+      padding = mediaQuery.size.width * 0;
+    }
+
+    return SizedBox(height: padding);
+  }
 }

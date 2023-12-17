@@ -16,7 +16,18 @@ import 'settings.dart';
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
-  static const _gap = SizedBox(height: 60);
+  static SizedBox getGapHeight(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    double screenHeight = MediaQuery.of(context).size.height;
+    var padding;
+    if (screenHeight > 718) {
+      padding = mediaQuery.size.width * 0.03;
+    } else {
+      padding = mediaQuery.size.width * 0;
+    }
+
+    return SizedBox(height: padding);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +39,7 @@ class SettingsScreen extends StatelessWidget {
       body: ResponsiveScreen(
         squarishMainArea: ListView(
           children: [
-            _gap,
+            getGapHeight(context),
             const Text(
               'Settings',
               textAlign: TextAlign.center,
@@ -38,7 +49,7 @@ class SettingsScreen extends StatelessWidget {
                 height: 1,
               ),
             ),
-            _gap,
+            getGapHeight(context),
             const _NameChangeLine(
               'Name',
             ),
@@ -71,7 +82,7 @@ class SettingsScreen extends StatelessWidget {
                 );
               },
             ),
-            _gap,
+            getGapHeight(context),
           ],
         ),
         rectangularMenuArea: MyButton(

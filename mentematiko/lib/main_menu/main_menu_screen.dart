@@ -20,24 +20,42 @@ class MainMenuScreen extends StatelessWidget {
       backgroundColor: palette.backgroundMain,
       body: ResponsiveScreen(
         squarishMainArea: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.asset('assets/images/logo.png', semanticLabel: 'Logo'),
-                _gap,
-                _gap,
-                MyButton(
-                  onPressed: () {
-                    GoRouter.of(context).go('/loginOrRegister');
-                  },
-                  child: const Text('Play'),
-                ),
-              ],
-            ),
-          ), rectangularMenuArea: _gap,
+          child: Column(
+            children: [
+              Image.asset('assets/images/logo.png', semanticLabel: 'Logo'),
+              getGapHeight(context),
+              MyButton(
+                onPressed: () {
+                  GoRouter.of(context).go('/login');
+                },
+                child: Text('Login'),
+              ),
+              SizedBox(height: 10),
+              MyButton(
+                onPressed: () {
+                  GoRouter.of(context).go('/register');
+                },
+                child: Text('Register'),
+              ),
+            ],
+          ),
+        ),
+        rectangularMenuArea: getGapHeight(context),
       ),
     );
   }
 
-  static const _gap = SizedBox(height: 190);
+  static SizedBox getGapHeight(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    double screenHeight = MediaQuery.of(context).size.height;
+    double screenWidth = MediaQuery.of(context).size.width;
+    var padding;
+    if (screenHeight > 718 && (screenWidth < 666 || screenWidth > 710)) {
+      padding = mediaQuery.size.width * 0.19;
+    } else {
+      padding = mediaQuery.size.width * 0.08;
+    }
+
+    return SizedBox(height: padding);
+  }
 }

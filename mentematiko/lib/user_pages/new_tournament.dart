@@ -87,7 +87,7 @@ class __SquadFormState extends State<_SquadForm> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        _gap,
+        getGapHeight(context),
         Text('Squadra'),
         // Add TextFormFields for player codes
         TextFormField(
@@ -122,5 +122,16 @@ class __SquadFormState extends State<_SquadForm> {
     );
   }
 
-  static const _gap = SizedBox(height: 35);
+  static SizedBox getGapHeight(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    double screenHeight = MediaQuery.of(context).size.height;
+    var padding;
+    if (screenHeight > 718) {
+      padding = mediaQuery.size.width * 0.03;
+    } else {
+      padding = mediaQuery.size.width * 0;
+    }
+
+    return SizedBox(height: padding);
+  }
 }

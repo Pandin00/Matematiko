@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:card/main_menu/login.dart';
-import 'package:card/main_menu/login_or_register_screen.dart';
 import 'package:card/main_menu/register.dart';
 import 'package:card/models/user.dart';
 import 'package:card/services/login_register_service.dart';
@@ -33,15 +32,6 @@ final router = GoRouter(
       builder: (context, state) => const MainMenuScreen(key: Key('main menu')),
       routes: [
         GoRoute(
-            path: 'loginOrRegister',
-            pageBuilder: (context, state) => buildMyTransition<void>(
-                  key: ValueKey('loginOrRegister'),
-                  color: context.watch<Palette>().backgroundPlaySession,
-                  child: const LoginOrRegister(
-                    key: Key('level selection'),
-                  ),
-                )),
-        GoRoute(
             path: 'login',
             pageBuilder: (context, state) => buildMyTransition<void>(
                   key: ValueKey('login'),
@@ -61,14 +51,13 @@ final router = GoRouter(
         GoRoute(
             path: 'userMenu',
             pageBuilder: (context, state) {
-                UserMenu menu=UserMenu(key:Key('userMenu'),user:state.extra as User );
-                return buildMyTransition(
-                  child: menu, 
+              UserMenu menu =
+                  UserMenu(key: Key('userMenu'), user: state.extra as User);
+              return buildMyTransition(
+                  child: menu,
                   color: context.watch<Palette>().backgroundPlaySession,
-                  key: ValueKey('userMenu')
-                );
-                
-        },
+                  key: ValueKey('userMenu'));
+            },
             routes: [
               GoRoute(
                   path: 'newTournament',

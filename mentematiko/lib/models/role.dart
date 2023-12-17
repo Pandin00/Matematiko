@@ -1,6 +1,1 @@
-enum ROLE{
-    user,
-    arb
-
-  
-}
+enum ROLE { user, arb }
