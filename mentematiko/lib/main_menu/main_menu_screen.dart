@@ -50,7 +50,7 @@ class MainMenuScreen extends StatelessWidget {
     double screenHeight = MediaQuery.of(context).size.height;
     double screenWidth = MediaQuery.of(context).size.width;
     var padding;
-    if (screenHeight > 718 && (screenWidth < 666 || screenWidth > 710)) {
+    if (screenHeight > 780) {
       padding = mediaQuery.size.width * 0.19;
     } else {
       padding = mediaQuery.size.width * 0.08;

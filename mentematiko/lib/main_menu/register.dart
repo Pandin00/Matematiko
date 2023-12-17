@@ -114,7 +114,7 @@ class _RegisterPageState extends State<RegisterPage> {
     final mediaQuery = MediaQuery.of(context);
     double screenHeight = MediaQuery.of(context).size.height;
     var padding;
-    if (screenHeight > 718) {
+    if (screenHeight > 736) {
       padding = mediaQuery.size.width * 0.03;
     } else {
       padding = mediaQuery.size.width * 0;
