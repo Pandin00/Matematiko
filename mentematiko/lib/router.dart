@@ -6,6 +6,7 @@ import 'package:card/main_menu/login.dart';
 import 'package:card/main_menu/register.dart';
 import 'package:card/models/user.dart';
 import 'package:card/services/login_register_service.dart';
+import 'package:card/user_pages/new_table.dart';
 import 'package:card/user_pages/new_tournament.dart';
 import 'package:card/user_pages/tournament_view.dart';
 import 'package:card/user_pages/user_menu.dart';
@@ -67,6 +68,13 @@ final router = GoRouter(
                         child: NewTournamentPage(),
                       )),
               GoRoute(
+                  path: 'newTable',
+                  pageBuilder: (context, state) => buildMyTransition<void>(
+                        key: ValueKey('newTable'),
+                        color: context.watch<Palette>().backgroundPlaySession,
+                        child: CreateNewTablePage(),
+                      )),
+              GoRoute(
                   path: 'tournamentsView',
                   pageBuilder: (context, state) => buildMyTransition<void>(
                         key: ValueKey('tournamentsView'),
@@ -117,7 +125,8 @@ final router = GoRouter(
                   )
                 ],
               ),
-            ]),
+            ]
+          ),
         GoRoute(
           path: 'settings',
           builder: (context, state) =>

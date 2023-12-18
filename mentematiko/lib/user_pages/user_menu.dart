@@ -63,12 +63,24 @@ class AdminUserMenu extends StatelessWidget {
             child: Text('Visualizza tornei'),
           ),
           MyButton(
-            onPressed: () {},
+            onPressed: () async {
+              final code = await showDialog<String>(
+                context: context,
+                builder: (BuildContext context) => _EnterGameCode(),
+              );
+
+              if (code != null) {
+                // Check if the game code exists and go to /userMenu/play if it does
+                GoRouter.of(context).go('/userMenu/play');
+              }
+            },
             child: Text('Entra in partita'),
           ),
           MyButton(
-            onPressed: () {},
-            child: Text('Guarda Partita'),
+            onPressed: () {
+              GoRouter.of(context).go('/userMenu/tournamentsView');
+            },
+            child: Text('Guarda Classifica'),
           ),
         ],
       ),
@@ -95,8 +107,16 @@ class NormalUserMenu extends StatelessWidget {
           Text(user?.cf ?? 'wrong data'),
           getGapHeight(context),
           MyButton(
-            onPressed: () {
-              GoRouter.of(context).go('/userMenu/play');
+            onPressed: () async {
+              final code = await showDialog<String>(
+                context: context,
+                builder: (BuildContext context) => _EnterGameCode(),
+              );
+
+              if (code != null) {
+                // Check if the game code exists and go to /userMenu/play if it does
+                GoRouter.of(context).go('/userMenu/play');
+              }
             },
             child: Text('Entra in partita'),
           ),
@@ -122,5 +142,39 @@ class NormalUserMenu extends StatelessWidget {
     }
 
     return SizedBox(height: padding);
+  }
+}
+
+class _EnterGameCode extends StatefulWidget {
+  @override
+  __EnterGameCodeState createState() => __EnterGameCodeState();
+}
+
+class __EnterGameCodeState extends State<_EnterGameCode> {
+  final TextEditingController _controller = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Inserisci il codice della partita'),
+      content: TextField(
+        controller: _controller,
+        decoration: InputDecoration(hintText: 'Codice'),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: Text('Annulla'),
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop(_controller.text);
+          },
+          child: Text('Invia'),
+        ),
+      ],
+    );
   }
 }

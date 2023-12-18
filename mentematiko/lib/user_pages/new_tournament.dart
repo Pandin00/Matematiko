@@ -1,6 +1,7 @@
 import 'package:card/style/my_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:go_router/go_router.dart';
 
 class NewTournamentPage extends StatefulWidget {
   @override
@@ -25,6 +26,8 @@ class _NewTournamentPageState extends State<NewTournamentPage> {
   // Define a function to handle form submission
   void _submitForm() {
     // Perform necessary actions like validation, data submission etc.
+
+    GoRouter.of(context).go('/userMenu/newTable');
   }
 
   @override
