@@ -21,4 +21,10 @@ class LoginService {
     }
     return querySnapshot.docs.first.data();
   }
+
+
+void registration(User user) async {   
+    await firestore.collection('users').add(user.toFirestore(true));
+  }
+
 }

@@ -7,6 +7,7 @@ class User {
   String regione;
   String provincia;
   String istituto;
+  String? password;
   ROLE role;
 
   User(
@@ -16,10 +17,24 @@ class User {
       required this.regione,
       required this.provincia,
       required this.istituto,
-      required this.role});
+      required this.role,
+      this.password});
 
   ROLE? getFromString(String value) {
     return ROLE.values.firstWhere((e) => e.toString().split('.').last == value);
+  }
+
+  Map<String, dynamic> toFirestore(bool isUser){
+    return {
+      'email': email,
+      'nome': nome,
+      'cf': cf,
+      'regione':regione,
+      'provincia':provincia,
+      'istituto':istituto,
+      'password': password,
+      'role': isUser ? ROLE.user.toString().split('.')[1] : ROLE.arb.toString().split('.')[1]
+    };
   }
 
   factory User.fromFirestore(Map<String, dynamic> data) {

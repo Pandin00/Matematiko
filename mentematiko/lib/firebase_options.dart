@@ -43,16 +43,15 @@ class DefaultFirebaseOptions {
     }
   }
 
-  static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyCQksC_EUhpsX31u8I6vJoKPB-hNn31W3Y',
-    appId: '1:94206890947:web:eef34dfb3895ccc026a376',
-    messagingSenderId: '94206890947',
-    projectId: 'mentematiko',
-    authDomain: 'mentematiko.firebaseapp.com',
-    storageBucket: 'mentematiko.appspot.com',
-    measurementId: 'G-37DBNRKWTE',
-  );
-
+  static const web = FirebaseOptions(
+      apiKey: "AIzaSyCQksC_EUhpsX31u8I6vJoKPB-hNn31W3Y",
+      authDomain: "mentematiko.firebaseapp.com",
+      projectId: "mentematiko",
+      storageBucket: "mentematiko.appspot.com",
+      messagingSenderId: "94206890947",
+      appId: "1:94206890947:web:eef34dfb3895ccc026a376",
+      measurementId: "G-37DBNRKWTE");
+      
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyCSDozA_E7JlpbzOD3WVUnEjAxfGQb0NPk',
     appId: '1:94206890947:android:947e954099bf5b9726a376',
