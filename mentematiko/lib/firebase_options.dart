@@ -43,38 +43,39 @@ class DefaultFirebaseOptions {
     }
   }
 
-  static const web = FirebaseOptions(
-      apiKey: "AIzaSyCQksC_EUhpsX31u8I6vJoKPB-hNn31W3Y",
-      authDomain: "mentematiko.firebaseapp.com",
-      projectId: "mentematiko",
-      storageBucket: "mentematiko.appspot.com",
-      messagingSenderId: "94206890947",
-      appId: "1:94206890947:web:eef34dfb3895ccc026a376",
-      measurementId: "G-37DBNRKWTE");
-      
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyCZpLCOT2RXOCafkRbgi69dDi86wyoGFas',
+    appId: '1:303838311158:web:4a9644910bf630ef80b2d7',
+    messagingSenderId: '303838311158',
+    projectId: 'mentematiko-d6e5e',
+    authDomain: 'mentematiko-d6e5e.firebaseapp.com',
+    storageBucket: 'mentematiko-d6e5e.appspot.com',
+    measurementId: 'G-P82T3EH1ZS',
+  );
+
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyCSDozA_E7JlpbzOD3WVUnEjAxfGQb0NPk',
-    appId: '1:94206890947:android:947e954099bf5b9726a376',
-    messagingSenderId: '94206890947',
-    projectId: 'mentematiko',
-    storageBucket: 'mentematiko.appspot.com',
+    apiKey: 'AIzaSyApVqKbRolCPPilkcM06GhZUXXDK8Iwr80',
+    appId: '1:303838311158:android:773e6f321cea181580b2d7',
+    messagingSenderId: '303838311158',
+    projectId: 'mentematiko-d6e5e',
+    storageBucket: 'mentematiko-d6e5e.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyA-rhRUV6gyBHLP43yogA1J2s9fpnYhYWM',
-    appId: '1:94206890947:ios:985d1c2503cc407b26a376',
-    messagingSenderId: '94206890947',
-    projectId: 'mentematiko',
-    storageBucket: 'mentematiko.appspot.com',
+    apiKey: 'AIzaSyC3ruYGOw-EJRJ0c4DxUPniYdryu5R9njI',
+    appId: '1:303838311158:ios:54043dbf3258278380b2d7',
+    messagingSenderId: '303838311158',
+    projectId: 'mentematiko-d6e5e',
+    storageBucket: 'mentematiko-d6e5e.appspot.com',
     iosBundleId: 'com.example.card',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyA-rhRUV6gyBHLP43yogA1J2s9fpnYhYWM',
-    appId: '1:94206890947:ios:a70a4c49ed7e40a726a376',
-    messagingSenderId: '94206890947',
-    projectId: 'mentematiko',
-    storageBucket: 'mentematiko.appspot.com',
+    apiKey: 'AIzaSyC3ruYGOw-EJRJ0c4DxUPniYdryu5R9njI',
+    appId: '1:303838311158:ios:a1ca652bbefcd5ef80b2d7',
+    messagingSenderId: '303838311158',
+    projectId: 'mentematiko-d6e5e',
+    storageBucket: 'mentematiko-d6e5e.appspot.com',
     iosBundleId: 'com.example.card.RunnerTests',
   );
 }
