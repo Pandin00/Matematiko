@@ -6,6 +6,7 @@ import 'package:card/main_menu/login.dart';
 import 'package:card/main_menu/register.dart';
 import 'package:card/models/user.dart';
 import 'package:card/services/login_register_service.dart';
+import 'package:card/services/match_service.dart';
 import 'package:card/user_pages/new_table.dart';
 import 'package:card/user_pages/new_tournament.dart';
 import 'package:card/user_pages/tournament_view.dart';
@@ -93,7 +94,10 @@ final router = GoRouter(
             pageBuilder: (context, state) => buildMyTransition<void>(
                   key: ValueKey('newTable'),
                   color: context.watch<Palette>().backgroundPlaySession,
-                  child: CreateNewTablePage(),
+                  child: CreateNewTablePage(
+                    key: Key('newTable'),
+                    matchService: context.read<MatchService>()
+                  ),
                 )),
         GoRoute(
             path: 'tournamentsView',

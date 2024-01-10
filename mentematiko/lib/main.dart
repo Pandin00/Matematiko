@@ -6,6 +6,7 @@ import 'dart:developer' as dev;
 
 import 'package:card/firebase_options.dart';
 import 'package:card/services/login_register_service.dart';
+import 'package:card/services/match_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
@@ -72,6 +73,7 @@ class MyApp extends StatelessWidget {
           Provider(create: (context) => SettingsController()),
           Provider(create: (context) => Palette()),
           Provider(create: (context) => LoginService()),
+          Provider(create: (context) => MatchService()),
           ChangeNotifierProvider(create: (context) => PlayerProgress()),
           // Set up audio.
           ProxyProvider2<AppLifecycleStateNotifier, SettingsController,
