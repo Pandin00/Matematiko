@@ -21,7 +21,7 @@ class UserMenu extends StatelessWidget {
           body: Builder(
             builder: (BuildContext context) {
               if (user.role == ROLE.arb) {
-                return AdminUserMenu();
+                return AdminUserMenu(key: key, user: user);
               } else {
                 return NormalUserMenu(key: key, user: user);
               }
@@ -34,6 +34,10 @@ class UserMenu extends StatelessWidget {
 }
 
 class AdminUserMenu extends StatelessWidget {
+  User? user;
+
+  AdminUserMenu({super.key, this.user});
+
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -46,19 +50,19 @@ class AdminUserMenu extends StatelessWidget {
           ),
           MyButton(
             onPressed: () {
-              GoRouter.of(context).go('/userMenu/usersView');
+              GoRouter.of(context).go('/usersView');
             },
             child: Text('Lista utenti'),
           ),
           MyButton(
             onPressed: () {
-              GoRouter.of(context).go('/userMenu/newTournament');
+              GoRouter.of(context).go('/newTournament');
             },
             child: Text('Crea torneo'),
           ),
           MyButton(
             onPressed: () {
-              GoRouter.of(context).go('/userMenu/tournamentsView');
+              GoRouter.of(context).go('/tournamentsView');
             },
             child: Text('Visualizza tornei'),
           ),
@@ -70,15 +74,15 @@ class AdminUserMenu extends StatelessWidget {
               );
 
               if (code != null) {
-                // Check if the game code exists and go to /userMenu/play if it does
-                GoRouter.of(context).go('/userMenu/play');
+                // Check if the game code exists and go to /play if it does
+                GoRouter.of(context).go('/play', extra: user);
               }
             },
             child: Text('Entra in partita'),
           ),
           MyButton(
             onPressed: () {
-              GoRouter.of(context).go('/userMenu/tournamentsView');
+              GoRouter.of(context).go('/tournamentsView');
             },
             child: Text('Guarda Classifica'),
           ),
@@ -114,15 +118,15 @@ class NormalUserMenu extends StatelessWidget {
               );
 
               if (code != null) {
-                // Check if the game code exists and go to /userMenu/play if it does
-                GoRouter.of(context).go('/userMenu/play');
+                // Check if the game code exists and go to /play if it does
+                GoRouter.of(context).go('/play', extra: user);
               }
             },
             child: Text('Entra in partita'),
           ),
           MyButton(
             onPressed: () {
-              GoRouter.of(context).go('/userMenu/tournamentsView');
+              GoRouter.of(context).go('/tournamentsView');
             },
             child: Text('Guarda Classifica'),
           ),

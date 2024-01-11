@@ -5,6 +5,7 @@
 import 'package:card/main_menu/login.dart';
 import 'package:card/main_menu/register.dart';
 import 'package:card/models/user.dart';
+import 'package:card/play_session/play_session_screen.dart';
 import 'package:card/services/login_register_service.dart';
 import 'package:card/services/match_service.dart';
 import 'package:card/user_pages/new_table.dart';
@@ -112,7 +113,17 @@ final router = GoRouter(
                   key: ValueKey('usersView'),
                   color: context.watch<Palette>().backgroundPlaySession,
                   child: UsersPage(),
-                ))
+                )),
+        GoRoute(
+                path: 'play',
+                pageBuilder: (context, state){
+                   PlaySessionScreen play =
+                PlaySessionScreen(key: Key('playSessionScreen'), user: state.extra as User);
+                return buildMyTransition<void>(
+                  color: context.watch<Palette>().backgroundPlaySession,
+                  child: play,
+                );
+                }),
       ],
     ),
   ],

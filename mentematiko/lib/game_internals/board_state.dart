@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:card/game_internals/dice.dart';
 import 'package:flutter/foundation.dart';
 
 import 'player.dart';
@@ -12,7 +13,7 @@ class BoardState {
 
   final PlayingArea areaOne = PlayingArea();
 
-  final PlayingArea areaTwo = PlayingArea();
+  final Dice areaTwo = Dice();
 
   final Player player = Player();
 
@@ -20,12 +21,11 @@ class BoardState {
     player.addListener(_handlePlayerChange);
   }
 
-  List<PlayingArea> get areas => [areaOne, areaTwo];
+  List<PlayingArea> get areas => [areaOne];
 
   void dispose() {
     player.removeListener(_handlePlayerChange);
     areaOne.dispose();
-    areaTwo.dispose();
   }
 
   void _handlePlayerChange() {

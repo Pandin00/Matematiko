@@ -4,6 +4,7 @@
 
 import 'dart:async';
 
+import 'package:card/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:logging/logging.dart' hide Level;
@@ -25,7 +26,9 @@ import '../multiplayer/firestore_controller.dart';
 /// It is a stateful widget because it manages some state of its own,
 /// such as whether the game is in a "celebration" state.
 class PlaySessionScreen extends StatefulWidget {
-  const PlaySessionScreen({super.key});
+  final User user;
+  
+  const PlaySessionScreen({super.key, required this.user});
 
   @override
   State<PlaySessionScreen> createState() => _PlaySessionScreenState();

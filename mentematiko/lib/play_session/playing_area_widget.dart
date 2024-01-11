@@ -41,11 +41,11 @@ class _PlayingAreaWidgetState extends State<PlayingAreaWidget> {
                 splashColor: palette.redPen,
                 onTap: _onAreaTap,
                 child: StreamBuilder(
-                  // Rebuild the card stack whenever the area changes
-                  // (either by a player action, or remotely).
-                  stream: widget.area.allChanges,
-                  builder: (context, child) => _CardStack(widget.area.cards),
-                ),
+                      // Rebuild the card stack whenever the area changes
+                      // (either by a player action, or remotely).
+                      stream: widget.area.allChanges,
+                      builder: (context, child) => _CardStack(widget.area.cards),
+                    ),
               ),
             ),
           ),
@@ -58,7 +58,7 @@ class _PlayingAreaWidgetState extends State<PlayingAreaWidget> {
   }
 
   void _onAreaTap() {
-    widget.area.removeFirstCard();
+    widget.area.showPlateCard(context);
 
     final audioController = context.read<AudioController>();
     audioController.playSfx(SfxType.huhsh);

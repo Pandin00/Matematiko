@@ -39,9 +39,9 @@ class PlayingCard {
   }
 
   Map<String, dynamic> toJson() => {
-        'suit': suit.internalRepresentation,
-        'value': value,
-      };
+    'suit': suit.internalRepresentation,
+    'value': value,
+  };
 
   @override
   String toString() {

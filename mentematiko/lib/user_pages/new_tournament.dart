@@ -27,7 +27,7 @@ class _NewTournamentPageState extends State<NewTournamentPage> {
   void _submitForm() {
     // Perform necessary actions like validation, data submission etc.
 
-    GoRouter.of(context).go('/userMenu/newTable');
+    GoRouter.of(context).go('/newTable');
   }
 
   @override

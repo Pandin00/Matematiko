@@ -42,18 +42,11 @@ class FirestoreController {
     _areaOneFirestoreSubscription = _areaOneRef.snapshots().listen((snapshot) {
       _updateLocalFromFirestore(boardState.areaOne, snapshot);
     });
-    _areaTwoFirestoreSubscription = _areaTwoRef.snapshots().listen((snapshot) {
-      _updateLocalFromFirestore(boardState.areaTwo, snapshot);
-    });
 
     // Subscribe to the local changes in game state.
     _areaOneLocalSubscription = boardState.areaOne.playerChanges.listen((_) {
       _updateFirestoreFromLocalAreaOne();
     });
-    _areaTwoLocalSubscription = boardState.areaTwo.playerChanges.listen((_) {
-      _updateFirestoreFromLocalAreaTwo();
-    });
-
     _log.fine('Initialized');
   }
 
@@ -115,12 +108,6 @@ class FirestoreController {
   void _updateFirestoreFromLocalAreaOne() {
     _updateFirestoreFromLocal(boardState.areaOne, _areaOneRef);
   }
-
-  /// Sends the local state of [boardState.areaTwo] to Firestore.
-  void _updateFirestoreFromLocalAreaTwo() {
-    _updateFirestoreFromLocal(boardState.areaTwo, _areaTwoRef);
-  }
-
   /// Updates the local state of [area] with the data from Firestore.
   void _updateLocalFromFirestore(
       PlayingArea area, DocumentSnapshot<List<PlayingCard>> snapshot) {
