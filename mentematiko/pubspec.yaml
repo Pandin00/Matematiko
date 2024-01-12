@@ -39,6 +39,7 @@ flutter:
     - assets/music/
     - assets/sfx/
     - assets/dice/
+    - assets/cards/
 
   fonts:
     - family: Permanent Marker

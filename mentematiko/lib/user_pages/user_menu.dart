@@ -119,7 +119,7 @@ class NormalUserMenu extends StatelessWidget {
 
               if (code != null) {
                 // Check if the game code exists and go to /play if it does
-                GoRouter.of(context).go('/play', extra: user);
+                GoRouter.of(context).go('/lobby', extra: user);
               }
             },
             child: Text('Entra in partita'),
