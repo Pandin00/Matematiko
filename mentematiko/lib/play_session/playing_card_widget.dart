@@ -3,10 +3,8 @@ import 'package:provider/provider.dart';
 
 import '../audio/audio_controller.dart';
 import '../audio/sounds.dart';
-import '../game_internals/card_suit.dart';
 import '../game_internals/player.dart';
 import '../game_internals/playing_card.dart';
-import '../style/palette.dart';
 
 class PlayingCardImage {
   final String imagePath;
@@ -32,8 +30,8 @@ final List<PlayingCardImage> cardImages = [
 ];
 
 class PlayingCardWidget extends StatelessWidget {
-  static const double width = 57.1;
-  static const double height = 88.9;
+  static const double width = 61;
+  static const double height = 101.9;
 
   final PlayingCard card;
   final Player? player;
