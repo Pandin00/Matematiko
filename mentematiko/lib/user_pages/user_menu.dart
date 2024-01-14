@@ -1,13 +1,16 @@
 import 'package:card/models/role.dart';
 import 'package:card/models/user.dart';
+import 'package:card/services/match_service.dart';
 import 'package:card/style/my_button.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class UserMenu extends StatelessWidget {
   final User user;
+  final MatchService matchService;
 
-  const UserMenu({required super.key, required this.user});
+  const UserMenu(
+      {required super.key, required this.user, required this.matchService});
 
   @override
   Widget build(BuildContext context) {
@@ -20,10 +23,12 @@ class UserMenu extends StatelessWidget {
           ),
           body: Builder(
             builder: (BuildContext context) {
-              if (user.role == ROLE.arb) {
-                return AdminUserMenu(key: key, user: user);
+              if (user.role == 'ARB') {
+                return ArbUserMenu(
+                    key: Key('arb'), user: user, matchService: matchService);
               } else {
-                return NormalUserMenu(key: key, user: user);
+                return NormalUserMenu(
+                    key: key, user: user, matchService: matchService);
               }
             },
           ),
@@ -33,10 +38,11 @@ class UserMenu extends StatelessWidget {
   }
 }
 
-class AdminUserMenu extends StatelessWidget {
-  User? user;
-
-  AdminUserMenu({super.key, this.user});
+class ArbUserMenu extends StatelessWidget {
+  final User user;
+  final MatchService matchService;
+  const ArbUserMenu(
+      {required super.key, required this.user, required this.matchService});
 
   @override
   Widget build(BuildContext context) {
@@ -45,28 +51,6 @@ class AdminUserMenu extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           MyButton(
-            onPressed: () {},
-            child: Text('Aggiungi utente'),
-          ),
-          MyButton(
-            onPressed: () {
-              GoRouter.of(context).go('/usersView');
-            },
-            child: Text('Lista utenti'),
-          ),
-          MyButton(
-            onPressed: () {
-              GoRouter.of(context).go('/newTournament');
-            },
-            child: Text('Crea torneo'),
-          ),
-          MyButton(
-            onPressed: () {
-              GoRouter.of(context).go('/tournamentsView');
-            },
-            child: Text('Visualizza tornei'),
-          ),
-          MyButton(
             onPressed: () async {
               final code = await showDialog<String>(
                 context: context,
@@ -74,17 +58,24 @@ class AdminUserMenu extends StatelessWidget {
               );
 
               if (code != null) {
-                // Check if the game code exists and go to /play if it does
-                GoRouter.of(context).go('/play', extra: user);
+                matchService.joinInGame(code, user).then((value) => {
+                      if (value)
+                        GoRouter.of(context).go('/lobby', extra: user)
+                      else
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text("Room not found or full"),
+                          duration: Duration(seconds: 4),
+                        ))
+                    });
               }
             },
             child: Text('Entra in partita'),
           ),
           MyButton(
             onPressed: () {
-              GoRouter.of(context).go('/tournamentsView');
+              GoRouter.of(context).go('/newTable', extra: user);
             },
-            child: Text('Guarda Classifica'),
+            child: Text('Crea tavolo'),
           ),
         ],
       ),
@@ -93,9 +84,10 @@ class AdminUserMenu extends StatelessWidget {
 }
 
 class NormalUserMenu extends StatelessWidget {
-  User? user;
+  User user;
+  final MatchService matchService;
 
-  NormalUserMenu({super.key, this.user});
+  NormalUserMenu({super.key, required this.user, required this.matchService});
 
   @override
   Widget build(BuildContext context) {
@@ -118,15 +110,22 @@ class NormalUserMenu extends StatelessWidget {
               );
 
               if (code != null) {
-                // Check if the game code exists and go to /play if it does
-                GoRouter.of(context).go('/play', extra: user);
+                matchService.joinInGame(code, user).then((value) => {
+                      if (value)
+                        GoRouter.of(context).go('/lobby', extra: user)
+                      else
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text("Room not found or full"),
+                          duration: Duration(seconds: 4),
+                        ))
+                    });
               }
             },
             child: Text('Entra in partita'),
           ),
           MyButton(
             onPressed: () {
-              GoRouter.of(context).go('/tournamentsView');
+              GoRouter.of(context).go('/userMenu/tournamentsView');
             },
             child: Text('Guarda Classifica'),
           ),

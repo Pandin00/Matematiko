@@ -138,3 +138,4 @@ class __SquadFormState extends State<_SquadForm> {
     return SizedBox(height: padding);
   }
 }
+

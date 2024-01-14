@@ -120,7 +120,7 @@ class _RegisterPageState extends State<RegisterPage> {
                              cf: _cf.text,
                              istituto: _istituto.text,
                              regione: _regione.text,
-                             role: ROLE.user,
+                             role: 'user',
                              nome: _nome.text,
                              provincia: _provincia.text,
                              password: _password.text

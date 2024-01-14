@@ -9,8 +9,6 @@ import 'package:card/play_session/play_session_screen.dart';
 import 'package:card/services/login_register_service.dart';
 import 'package:card/services/match_service.dart';
 import 'package:card/user_pages/new_table.dart';
-import 'package:card/user_pages/new_tournament.dart';
-import 'package:card/user_pages/tournament_view.dart';
 import 'package:card/user_pages/user_menu.dart';
 import 'package:card/user_pages/users_view.dart';
 import 'package:flutter/foundation.dart';
@@ -40,7 +38,7 @@ final router = GoRouter(
           ),
           redirect: (context, state) {
             if (state.extra != null && state.extra is User) {
-              return 'userMenu';
+              return '/userMenu';
             }
             return null;
           },
@@ -56,7 +54,7 @@ final router = GoRouter(
           ),
           redirect: (context, state) {
             if (state.extra != null && state.extra is User) {
-              return 'userMenu';
+              return '/userMenu';
             }
             return null;
           },
@@ -65,7 +63,9 @@ final router = GoRouter(
           path: 'userMenu',
           pageBuilder: (context, state) {
             UserMenu menu =
-                UserMenu(key: Key('userMenu'), user: state.extra as User);
+                UserMenu(key: Key('userMenu'), 
+                user: state.extra as User,
+                matchService: context.read<MatchService>());
             return buildMyTransition(
                 child: menu,
                 color: context.watch<Palette>().backgroundPlaySession,
@@ -73,7 +73,7 @@ final router = GoRouter(
           },
           redirect: (context, state) {
             if (state.extra == null) {
-              return 'login';
+              return '/login';
             }
             return null;
           },
@@ -84,29 +84,22 @@ final router = GoRouter(
               const SettingsScreen(key: Key('settings')),
         ),
         GoRoute(
-            path: 'newTournament',
-            pageBuilder: (context, state) => buildMyTransition<void>(
-                  key: ValueKey('NewTournament'),
-                  color: context.watch<Palette>().backgroundPlaySession,
-                  child: NewTournamentPage(),
-                )),
-        GoRoute(
-            path: 'newTable',
-            pageBuilder: (context, state) => buildMyTransition<void>(
-                  key: ValueKey('newTable'),
-                  color: context.watch<Palette>().backgroundPlaySession,
-                  child: CreateNewTablePage(
-                    key: Key('newTable'),
-                    matchService: context.read<MatchService>()
-                  ),
-                )),
-        GoRoute(
-            path: 'tournamentsView',
-            pageBuilder: (context, state) => buildMyTransition<void>(
-                  key: ValueKey('tournamentsView'),
-                  color: context.watch<Palette>().backgroundPlaySession,
-                  child: TournamentsView(),
-                )),
+          path: 'newTable',
+          pageBuilder: (context, state) => buildMyTransition<void>(
+            key: ValueKey('newTable'),
+            color: context.watch<Palette>().backgroundPlaySession,
+            child: CreateNewTablePage(
+                key: Key('newTable'),
+                matchService: context.read<MatchService>(),
+                user: state.extra as User),
+          ),
+          redirect: (context, state) {
+            if (state.extra == null) {
+              return '/login';
+            }
+            return null;
+          },
+        ),
         GoRoute(
             path: 'usersView',
             pageBuilder: (context, state) => buildMyTransition<void>(

@@ -8,7 +8,7 @@ class User {
   String provincia;
   String istituto;
   String? password;
-  ROLE role;
+  String role;
 
   User(
       {required this.email,
@@ -33,7 +33,7 @@ class User {
       'provincia':provincia,
       'istituto':istituto,
       'password': password,
-      'role': isUser ? ROLE.user.toString().split('.')[1] : ROLE.arb.toString().split('.')[1]
+      'role': isUser ? 'USER' : 'ARB'
     };
   }
 
@@ -46,6 +46,6 @@ class User {
         regione: data['regione'] ?? '',
         provincia: data['provincia'] ?? '',
         istituto: data['istituto'] ?? '',
-        role: ROLE.user);
+        role: data['role'] ?? '');
   }
 }
