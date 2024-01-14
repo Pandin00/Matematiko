@@ -14,7 +14,6 @@ import '../audio/audio_controller.dart';
 import '../audio/sounds.dart';
 import '../game_internals/board_state.dart';
 import '../game_internals/score.dart';
-import '../style/confetti.dart';
 import '../style/my_button.dart';
 import '../style/palette.dart';
 import 'board_widget.dart';
@@ -96,16 +95,6 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                     ),
                   ),
                 ],
-              ),
-              SizedBox.expand(
-                child: Visibility(
-                  visible: _duringCelebration,
-                  child: IgnorePointer(
-                    child: Confetti(
-                      isStopped: !_duringCelebration,
-                    ),
-                  ),
-                ),
               ),
             ],
           ),

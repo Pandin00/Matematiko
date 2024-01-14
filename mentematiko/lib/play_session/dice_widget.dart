@@ -5,6 +5,9 @@ import 'package:card/game_internals/dice.dart';
 import 'package:flutter/material.dart';
 import 'playing_card_widget.dart';
 
+//indica il tipo di dado in base alle facce 6, 10, 20 
+int diceType = 6;
+
 class DiceWidget extends StatefulWidget {
   final Dice area;
 
@@ -16,14 +19,8 @@ class DiceWidget extends StatefulWidget {
 
 class _DiceWidgetState extends State<DiceWidget> with SingleTickerProviderStateMixin {
   bool isHighlighted = false;
-  final List<String> diceImages = [
-    'assets/dice/dice.png',
-    'assets/dice/dice (1).png',
-    'assets/dice/dice (2).png',
-    'assets/dice/dice (3).png',
-    'assets/dice/dice (4).png',
-    'assets/dice/dice (5).png',
-  ];
+  
+  List<String> diceImages = [];
 
   AnimationController? _diceAnimationController;
   late AudioPlayer _audioPlayer;
@@ -32,10 +29,60 @@ class _DiceWidgetState extends State<DiceWidget> with SingleTickerProviderStateM
   @override
   void initState() {
     super.initState();
+    switch(diceType) {
+      case 6:
+        diceImages = [
+        'assets/dice/dice.png', //simbolo per
+        'assets/dice/dice (1).png', //simbolo -
+        'assets/dice/dice (2).png', //simbolo +
+        'assets/dice/dice (3).png', //simbolo :
+        'assets/dice/dice (4).png', //simbolo =
+        'assets/dice/dice (5).png', //simbolo >
+      ];
+      break;
+    case 10:
+        diceImages = [
+        'dice/d10-1.png',
+        'dice/d10-2.png',
+        'dice/d10-3.png',
+        'dice/d10-4.png',
+        'dice/d10-5.png',
+        'dice/d10-6.png',
+        'dice/d10-7.png',
+        'dice/d10-8.png',
+        'dice/d10-9.png',
+        'dice/d10-10.png',
+      ];     
+      break;
+    case 20:
+        diceImages = [
+        'dice/d20-1.png',
+        'dice/d20-2.png',
+        'dice/d20-3.png',
+        'dice/d20-4.png',
+        'dice/d20-5.png',
+        'dice/d20-6.png',
+        'dice/d20-7.png',
+        'dice/d20-8.png',
+        'dice/d20-9.png',
+        'dice/d20-10.png',
+        'dice/d20-11.png',
+        'dice/d20-12.png',
+        'dice/d20-13.png',
+        'dice/d20-14.png',
+        'dice/d20-15.png',
+        'dice/d20-16.png',
+        'dice/d20-17.png',
+        'dice/d20-18.png',
+        'dice/d20-19.png',
+        'dice/d20-20.png',
+      ];
+      break;
+    }
     _audioPlayer = AudioPlayer();
     _diceAnimationController = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 1100),
+      duration: Duration(milliseconds: 910),
     );
     final tween = Tween<double>(begin: 0, end: 1);
     _diceAnimation = tween.animate(_diceAnimationController!);
@@ -59,14 +106,15 @@ class _DiceWidgetState extends State<DiceWidget> with SingleTickerProviderStateM
     _playDiceSound();
   }
 
-  void _startDiceAnimation() {
-    _diceAnimationController?.forward();
+  Future<void> _startDiceAnimation() async {
+    await _diceAnimationController?.forward();
+    _diceAnimationController?.reset();
   }
 
   @override
   Widget build(BuildContext context) {
     final random = Random();
-    final diceFace = random.nextInt(6) + 1;
+    final diceFace = random.nextInt(diceImages.length) + 1;
 
     return LimitedBox(
       maxHeight: 200,
@@ -126,24 +174,46 @@ class __DiceState extends State<_Dice> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-        width: 100,
-        height: 100,
-        child: Image.asset(
-          widget.image,
-          fit: BoxFit.cover,
-          frameBuilder: (context, image, frame, callback) {
-            if (frame == null) {
-              return Container();
-            }
-            return Transform.rotate(
-              angle: widget.animation.value * 2 * pi,
-              child: image,
-            );
-          },
+    if(diceType == 6){
+      return Center(
+        child: Container(
+          width: 120,
+          height: 120,
+          child: Image.asset(
+            widget.image,
+            fit: BoxFit.cover,
+            frameBuilder: (context, image, frame, callback) {
+              if (frame == null) {
+                return Container();
+              }
+              return Transform.rotate(
+                angle: widget.animation.value * 2 * pi,
+                child: image,
+              );
+            },
+          ),
         ),
-      ),
-    );
+      );
+    } else {
+      return Center(
+        child: Container(
+          width: 120,
+          height: 160,
+          child: Image.asset(
+            widget.image,
+            fit: BoxFit.cover,
+            frameBuilder: (context, image, frame, callback) {
+              if (frame == null) {
+                return Container();
+              }
+              return Transform.rotate(
+                angle: widget.animation.value * 2 * pi,
+                child: image,
+              );
+            },
+          ),
+        ),
+      );
+    }
   }
 }
