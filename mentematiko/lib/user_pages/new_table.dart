@@ -5,6 +5,7 @@ import 'package:card/models/user.dart';
 import 'package:card/services/match_service.dart';
 import 'package:card/style/my_button.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class CreateNewTablePage extends StatefulWidget {
 
@@ -76,8 +77,8 @@ class _CreateNewTablePageState extends State<CreateNewTablePage> {
                  int players=int.tryParse( playersController.text) ?? 2;
                  RoomCreation r=RoomCreation(players: players, minutes: _selectedMinutes);
                  widget.matchService.createRooom(r,widget.user).then((value) => {
-                   //pagina di loading 
-                   //redirect 
+                    if(value)
+                       GoRouter.of(context).go('/lobby', extra: widget.user)   
                  });
                 },
                 child: Text('Create Table'),

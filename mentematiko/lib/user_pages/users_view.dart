@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:js_interop';
+import 'package:card/models/user.dart';
 import 'package:card/services/users_service.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -33,12 +35,12 @@ class _UsersPageState extends State<UsersPage> {
 
           return ListView(
             children: snapshot.data!.docs.map((DocumentSnapshot document) {
-              Map<String, dynamic> data =
-                  json.decode(json.encode(document.data()));
-
+              
+              Map<String, dynamic> data =document.data() as Map<String,dynamic>;
+              User u=User.fromFirestore(data);
               return ListTile(
-                title: Text(data['name']),
-                subtitle: Text(data['role']),
+                title: Text(u.nome),
+                subtitle: Text(u.role),
                 trailing: IconButton(
                   icon: Icon(Icons.delete),
                   onPressed: () {

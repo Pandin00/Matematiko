@@ -7,6 +7,7 @@ import 'dart:developer' as dev;
 import 'package:card/firebase_options.dart';
 import 'package:card/services/login_register_service.dart';
 import 'package:card/services/match_service.dart';
+import 'package:card/settings/persistence/local_storage_settings_persistence.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
@@ -70,7 +71,7 @@ class MyApp extends StatelessWidget {
         // `context.watch()` or `context.read()`.
         // See `lib/main_menu/main_menu_screen.dart` for example usage.
         providers: [
-          Provider(create: (context) => SettingsController()),
+          Provider(create: (context) => SettingsController(store: LocalStorageSettingsPersistence())),
           Provider(create: (context) => Palette()),
           Provider(create: (context) => LoginService()),
           Provider(create: (context) => MatchService()),

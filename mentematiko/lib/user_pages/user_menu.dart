@@ -1,9 +1,11 @@
 import 'package:card/models/role.dart';
 import 'package:card/models/user.dart';
 import 'package:card/services/match_service.dart';
+import 'package:card/settings/settings.dart';
 import 'package:card/style/my_button.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 class UserMenu extends StatelessWidget {
   final User user;
@@ -59,13 +61,17 @@ class ArbUserMenu extends StatelessWidget {
 
               if (code != null) {
                 matchService.joinInGame(code, user).then((value) => {
-                      if (value)
+                      if (value.errorCode != 'NOT_FOUND' && value.errorCode!='FULL'){
+                        context.read<SettingsController>().setRoomCode(value.roomCode?? ''),
+                        context.read<SettingsController>().setMaxPlayer(value.maxPlayers?? -1),
                         GoRouter.of(context).go('/lobby', extra: user)
-                      else
+                      }
+                      else{
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                           content: Text("Room not found or full"),
                           duration: Duration(seconds: 4),
                         ))
+                      }
                     });
               }
             },
@@ -111,13 +117,17 @@ class NormalUserMenu extends StatelessWidget {
 
               if (code != null) {
                 matchService.joinInGame(code, user).then((value) => {
-                      if (value)
+                      if (value.errorCode != 'NOT_FOUND' && value.errorCode!='FULL'){
+                        context.read<SettingsController>().setRoomCode(value.roomCode?? ''),
+                        context.read<SettingsController>().setMaxPlayer(value.maxPlayers?? -1),
                         GoRouter.of(context).go('/lobby', extra: user)
-                      else
+                      }
+                      else{
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                           content: Text("Room not found or full"),
                           duration: Duration(seconds: 4),
                         ))
+                      }
                     });
               }
             },

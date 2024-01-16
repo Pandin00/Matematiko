@@ -46,7 +46,7 @@ class _CustomNameDialogState extends State<CustomNameDialog> {
             textCapitalization: TextCapitalization.words,
             textInputAction: TextInputAction.done,
             onChanged: (value) {
-              context.read<SettingsController>().setPlayerName(value);
+              //context.read<SettingsController>().setPlayerName(value);
             },
             onSubmitted: (value) {
               // Player tapped 'Submit'/'Done' on their keyboard.

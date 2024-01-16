@@ -1,3 +1,4 @@
+import 'dart:js_interop';
 import 'dart:math';
 
 import 'package:card/models/Room.dart';
@@ -81,7 +82,7 @@ class MatchService {
     return true;
   }
 
-  Future<bool> joinInGame(String code, User user) async {
+  Future<JoinedItem> joinInGame(String code, User user) async {
     var main = firestore.collection('rooms');
 
     QuerySnapshot<Room> querySnapshot = await main
@@ -95,7 +96,8 @@ class MatchService {
     if (querySnapshot.size > 0) {
       //found and join
       Room currentRoom = querySnapshot.docs.first.data();
-      int order=await getDocumentCountOnRooms(querySnapshot.docs.first.id,'players');
+      int order =
+          await getDocumentCountOnRooms(querySnapshot.docs.first.id, 'players');
       if (order <= currentRoom.numberOfPlayers) {
         Player p = Player(
             id: '${user.email}${'§'}${user.nome}',
@@ -107,28 +109,79 @@ class MatchService {
             .collection('players')
             .doc(user.email)
             .set(p.toFirestore());
-       return true;
+        return JoinedItem(querySnapshot.docs.first.id.toString(),querySnapshot.size);    
       } else {
-        return false;
+        return JoinedItem.fromError("FULL");
       }
     }
 
-    return false;
+    return JoinedItem.fromError("NOT_FOUND");
   }
 
+  Stream<QuerySnapshot<Map<String, dynamic>>> getPlayerInRealTime(String idRoom) {
+    Stream<QuerySnapshot<Map<String, dynamic>>> data = firestore
+        .collection('rooms')
+        .doc(idRoom)
+        .collection('players')
+        .snapshots();
 
-  Future<int> getDocumentCountOnRooms(String id,String collection) async {
+    return data;
+  }
+
+  Future<int> getDocumentCountOnRooms(String id, String collection) async {
     try {
-      QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection('rooms')
-      .doc(id)
-      .collection(collection)
-      .get();
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('rooms')
+          .doc(id)
+          .collection(collection)
+          .get();
       int count = querySnapshot.size;
       return count;
     } catch (e) {
       return -1; // Handle the error and return a default value or handle accordingly
     }
   }
+
+  void updateWhoIsPlaying(String idRoom,User user, bool playing){  
+     var rooms = firestore.collection('rooms');
+
+     Map<String, dynamic> update = {
+      'playing': playing,
+    };
+       rooms.doc(idRoom)
+      .collection('players')
+      .doc(user.role=='ARB' ? 'ARB' : user.email)
+      .update(update);
+  }
+
+
+  void distributeCards(String idRoom) async{
+     
+     /* get room by id 
+        per ogni player prendi le carte
+        rimuoveli dall'array & update
+        assegnale e fai update su firebase x player
+
+     */
+
+    var rooms = firestore.collection('rooms');
+    var players = firestore.collection('rooms').doc(idRoom).collection('players');
+
+     var roomInfo=await rooms.doc(idRoom).get();
+     Room currentRoom=Room.fromFirestore(roomInfo.data()!);
+    
+    
+
+
+
+
+
+  }
+
+
+  
+
+
 /*
   Future<void> fetchData() async {
     try {
@@ -197,4 +250,70 @@ class MatchService {
 
     return code;
   }
+
+
+
+
+  
 }
+
+
+  //classi di comodo
+class JoinedItem{
+    String? roomCode;
+    int? maxPlayers;
+    String? errorCode;
+
+     JoinedItem(this.roomCode,this.maxPlayers){
+        errorCode='';
+     }
+
+     JoinedItem.fromError(this.errorCode){
+           roomCode='';
+           maxPlayers=-1;
+     }
+  }
+
+
+  class UtilMatchService{
+
+     
+     List<int> extractNumbers(List<int> numericCards){
+       int notPrime=7;  // da reg. 7 pari e 2 primi
+       int prime=2;
+       List<int> extracted=List.empty(growable: true);
+       numericCards.forEach((element) {
+          if(isPrime(element)){
+            --prime;
+            extracted.add(element);
+          }else{
+            --notPrime;
+            extracted.add(element);
+          }
+          if(notPrime==0 && prime==0) {
+            return;
+          } 
+       });
+       numericCards.removeWhere((element) => extracted.contains(element)); //da verificare se è reference
+      return extracted;
+     }
+
+
+     bool isPrime(int number) {
+  if (number <= 1) {
+    // 0 and 1 are not prime numbers
+    return false;
+  }
+
+  for (int i = 2; i <= number / 2; i++) {
+    if (number % i == 0) {
+      // If the number is divisible by any number between 2 and half of itself, it's not prime
+      return false;
+    }
+  }
+
+  // If the loop completes without finding a divisor, the number is prime
+  return true;
+}
+
+  }
