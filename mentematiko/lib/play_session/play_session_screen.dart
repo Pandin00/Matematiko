@@ -5,16 +5,17 @@
 import 'dart:async';
 
 import 'package:card/models/user.dart';
+import 'package:card/play_session/dice_widget.dart';
+import 'package:card/play_session/opponent_widget.dart';
+import 'package:card/play_session/player_hand_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:logging/logging.dart' hide Level;
 import 'package:provider/provider.dart';
-
 import '../audio/audio_controller.dart';
 import '../audio/sounds.dart';
 import '../game_internals/board_state.dart';
 import '../game_internals/score.dart';
-import '../style/my_button.dart';
 import '../style/palette.dart';
 import 'board_widget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -47,60 +48,68 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
   late DateTime _startOfPlay;
 
   late final BoardState _boardState;
+  bool _timerExpired = false;
 
   @override
   Widget build(BuildContext context) {
     final palette = context.watch<Palette>();
 
-    return MultiProvider(
-      providers: [
-        Provider.value(value: _boardState),
-      ],
-      child: IgnorePointer(
-        // Ignore all input during the celebration animation.
-        ignoring: _duringCelebration,
-        child: Scaffold(
-          backgroundColor: palette.backgroundPlaySession,
-          // The stack is how you layer widgets on top of each other.
-          // Here, it is used to overlay the winning confetti animation on top
-          // of the game.
-          body: Stack(
-            children: [
-              // This is the main layout of the play session screen,
-              // with a settings button at top, the actual play area
-              // in the middle, and a back button at the bottom.
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: InkResponse(
-                      onTap: () => GoRouter.of(context).push('/settings'),
-                      child: Image.asset(
-                        'assets/images/settings.png',
-                        semanticLabel: 'Settings',
-                      ),
+return MultiProvider(
+  providers: [
+    Provider.value(value: _boardState),
+  ],
+  child: IgnorePointer(
+    ignoring: _duringCelebration,
+    child: Scaffold(
+      backgroundColor: palette.backgroundPlaySession,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+            // Schermo grande, utilizza un layout diverso
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    CountdownTimer(
+                      duration: 60,
+                      onTimerExpired: (expired) {
+                        setState(() {
+                          _timerExpired = expired;
+                        });
+                      },
                     ),
+                  ],
+                ),
+                Expanded(
+                  child: AspectRatio(
+                    aspectRatio: 1,
+                    child: GridView.count(
+                    crossAxisCount: 3,
+                    children:
+                    [
+                      for (int i = 0; i < 3; i++) OpponentWidget(),
+                      OpponentWidget(),
+                      BoardWidget(),
+                      OpponentWidget(),                
+                    ],
                   ),
-                  const Spacer(),
-                  // The actual UI of the game.
-                  BoardWidget(),
-                  Text("Drag cards to the two areas above."),
-                  const Spacer(),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: MyButton(
-                      onPressed: () => GoRouter.of(context).go('/'),
-                      child: const Text('Back'),
-                    ),
-                  ),
-                ],
+                ),
+              ),Container(
+                  height: 100,
+                  width: 100,
+                  child: DiceWidget(),
               ),
-            ],
-          ),
+              IgnorePointer(//quando il tempo arriva a 0 la mano non è cliccabile
+                ignoring: _timerExpired,
+                child: PlayerHandWidget()
+            ),],
+            );
+          },
         ),
       ),
-    );
+    ),
+  );
   }
 
   @override
@@ -152,5 +161,76 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
     if (!mounted) return;
 
     GoRouter.of(context).go('/play/won', extra: {'score': score});
+  }
+}
+
+class CountdownTimer extends StatefulWidget {
+  final int duration;
+  final ValueChanged<bool> onTimerExpired;
+
+  const CountdownTimer({
+    Key? key,
+    required this.duration,
+    required this.onTimerExpired,
+  }) : super(key: key);
+
+  @override
+  _CountdownTimerState createState() => _CountdownTimerState();
+}
+
+class _CountdownTimerState extends State<CountdownTimer> {
+  Timer? _timer;
+  int _remainingTime = 0;
+  bool _timerExpired = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _remainingTime = widget.duration;
+    _startTimer();
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void restartTimer() {
+    _timer?.cancel(); // Cancella il timer esistente
+    _remainingTime = widget.duration; // Reimposta il tempo rimanente
+    _startTimer(); // Avvia il nuovo timer
+  }
+
+  void _startTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        if (_remainingTime > 0) {
+          _remainingTime--;
+        } else {
+          _timer?.cancel();
+          _timerExpired = true;
+          widget.onTimerExpired(_timerExpired);
+        }
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    String timeString = _remainingTime.toString().padLeft(2, '0');
+    return Column(
+      children: [
+        Text(
+          ' Tempo turno: $timeString',
+          style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+        ),
+        if (_timerExpired)
+          const Text(
+            'Il tempo è scaduto',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.red),
+          ),
+      ],
+    );
   }
 }

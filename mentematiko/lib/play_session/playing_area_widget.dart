@@ -61,6 +61,7 @@ class _PlayingAreaWidgetState extends State<PlayingAreaWidget> {
     widget.area.showPlateCard(context);
 
     final audioController = context.read<AudioController>();
+    //TODO cambiare con un suono migliore
     audioController.playSfx(SfxType.huhsh);
   }
 

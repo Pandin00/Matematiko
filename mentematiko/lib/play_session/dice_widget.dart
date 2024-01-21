@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:audioplayers/audioplayers.dart';
-import 'package:card/game_internals/dice.dart';
 import 'package:flutter/material.dart';
 import 'playing_card_widget.dart';
 
@@ -9,9 +8,7 @@ import 'playing_card_widget.dart';
 int diceType = 6;
 
 class DiceWidget extends StatefulWidget {
-  final Dice area;
-
-  const DiceWidget(this.area, {super.key});
+  const DiceWidget({super.key});
 
   @override
   State<DiceWidget> createState() => _DiceWidgetState();

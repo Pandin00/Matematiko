@@ -62,10 +62,12 @@ class PlayingCardWidget extends StatelessWidget {
       ),
       onDragStarted: () {
         final audioController = context.read<AudioController>();
+        //TODO cambiare con un suono migliore
         audioController.playSfx(SfxType.huhsh);
       },
       onDragEnd: (details) {
         final audioController = context.read<AudioController>();
+        //TODO cambiare con un suono migliore
         audioController.playSfx(SfxType.wssh);
       },
       child: cardWidget,

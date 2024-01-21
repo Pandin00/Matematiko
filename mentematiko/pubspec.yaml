@@ -36,7 +36,6 @@ flutter:
   assets:
     - assets/images/
     - assets/music/
-    - assets/sfx/
     - assets/dice/
     - assets/cards/
 
