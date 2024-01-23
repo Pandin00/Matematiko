@@ -36,7 +36,7 @@ class PlaySessionScreen extends StatefulWidget {
 
 class _PlaySessionScreenState extends State<PlaySessionScreen> {
   static final _log = Logger('PlaySessionScreen');
-  
+  int numberOfPlayers = 6;
   FirestoreController? _firestoreController;
 
   static const _celebrationDuration = Duration(milliseconds: 2000);
@@ -53,63 +53,246 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
   @override
   Widget build(BuildContext context) {
     final palette = context.watch<Palette>();
-
-return MultiProvider(
-  providers: [
-    Provider.value(value: _boardState),
-  ],
-  child: IgnorePointer(
-    ignoring: _duringCelebration,
-    child: Scaffold(
-      backgroundColor: palette.backgroundPlaySession,
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-            // Schermo grande, utilizza un layout diverso
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    switch (numberOfPlayers) {
+      case > 4:
+      return MultiProvider(
+        providers: [
+          Provider.value(value: _boardState),
+        ],
+        child: IgnorePointer(
+        ignoring: _duringCelebration,
+        child: Scaffold(
+          backgroundColor: palette.backgroundPlaySession,
+          body: LayoutBuilder(
+            builder: (context, constraints) {
+              // Schermo grande, utilizza un layout diverso
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    CountdownTimer(
-                      duration: 60,
-                      onTimerExpired: (expired) {
-                        setState(() {
-                          _timerExpired = expired;
-                        });
-                      },
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        CountdownTimer(
+                          duration: 60,
+                          onTimerExpired: (expired) {
+                            setState(() {
+                              _timerExpired = expired;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                    Expanded(
+                        child: GridView.count(
+                        crossAxisCount: numberOfPlayers-3,
+                        children:
+                        [
+                          for (int i = 0; i < numberOfPlayers-3; i++) OpponentWidget(),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                        child: GridView.count(
+                        crossAxisCount: 3,
+                        children:
+                        [
+                          OpponentWidget(),
+                          BoardWidget(),
+                          OpponentWidget(),                
+                        ],
+                      ),
+                    ),
+                  Container(
+                    height: 100,
+                    width: 100,
+                    child: DiceWidget(),
+                  ),
+                  IgnorePointer(//quando il tempo arriva a 0 la mano non è cliccabile
+                    ignoring: _timerExpired,
+                    child: PlayerHandWidget()
+                  ),],
+                );
+              },
+            ),
+          ),
+        ),
+      );
+      case 2:
+      return MultiProvider(
+        providers: [
+          Provider.value(value: _boardState),
+        ],
+        child: IgnorePointer(
+        ignoring: _duringCelebration,
+        child: Scaffold(
+          backgroundColor: palette.backgroundPlaySession,
+          body: LayoutBuilder(
+            builder: (context, constraints) {
+              // Schermo grande, utilizza un layout diverso
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        CountdownTimer(
+                          duration: 60,
+                          onTimerExpired: (expired) {
+                            setState(() {
+                              _timerExpired = expired;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                    Expanded(
+                        child: GridView.count(
+                        crossAxisCount: 1,
+                        children:
+                        [
+                          OpponentWidget(),                
+                        ],
+                      ),
+                    ),
+                    Center(
+                      child: BoardWidget(),
+                    ),
+                    Container(
+                      height: 100,
+                      width: 100,
+                      child: DiceWidget(),
+                    ),
+                    IgnorePointer(//quando il tempo arriva a 0 la mano non è cliccabile
+                      ignoring: _timerExpired,
+                      child: PlayerHandWidget()
                     ),
                   ],
-                ),
-                Expanded(
-                  child: AspectRatio(
-                    aspectRatio: 1,
-                    child: GridView.count(
-                    crossAxisCount: 3,
-                    children:
-                    [
-                      for (int i = 0; i < 3; i++) OpponentWidget(),
-                      OpponentWidget(),
-                      BoardWidget(),
-                      OpponentWidget(),                
-                    ],
-                  ),
-                ),
-              ),Container(
-                  height: 100,
-                  width: 100,
-                  child: DiceWidget(),
-              ),
-              IgnorePointer(//quando il tempo arriva a 0 la mano non è cliccabile
-                ignoring: _timerExpired,
-                child: PlayerHandWidget()
-            ),],
-            );
-          },
+                );
+              },
+            ),
+          ),
         ),
-      ),
-    ),
-  );
+      );
+    case 3:
+      return MultiProvider(
+        providers: [
+          Provider.value(value: _boardState),
+        ],
+        child: IgnorePointer(
+        ignoring: _duringCelebration,
+        child: Scaffold(
+          backgroundColor: palette.backgroundPlaySession,
+          body: LayoutBuilder(
+            builder: (context, constraints) {
+              // Schermo grande, utilizza un layout diverso
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        CountdownTimer(
+                          duration: 60,
+                          onTimerExpired: (expired) {
+                            setState(() {
+                              _timerExpired = expired;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                    Expanded(
+                        child: GridView.count(
+                          crossAxisCount: 2,
+                          children:
+                          [
+                            OpponentWidget(),
+                            OpponentWidget(),
+                          ],
+                        ),
+                      ),
+                  Expanded(
+                    flex: 1,
+                    child: BoardWidget(),
+                  ),
+                  Container(
+                    height: 100,
+                    width: 100,
+                    child: DiceWidget(),
+                  ),
+                  IgnorePointer(//quando il tempo arriva a 0 la mano non è cliccabile
+                    ignoring: _timerExpired,
+                    child: PlayerHandWidget()
+                  ),],
+                );
+              },
+            ),
+          ),
+        ),
+      );
+    case 4:
+      return MultiProvider(
+        providers: [
+          Provider.value(value: _boardState),
+        ],
+        child: IgnorePointer(
+        ignoring: _duringCelebration,
+        child: Scaffold(
+          backgroundColor: palette.backgroundPlaySession,
+          body: LayoutBuilder(
+            builder: (context, constraints) {
+              // Schermo grande, utilizza un layout diverso
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        CountdownTimer(
+                          duration: 60,
+                          onTimerExpired: (expired) {
+                              setState(() {
+                                _timerExpired = expired;
+                              });
+                          },
+                          ),
+                      ],
+                    ),
+                    Expanded(
+                        child: GridView.count(
+                          crossAxisCount: 3,
+                          children:
+                          [
+                            OpponentWidget(),
+                            OpponentWidget(),
+                            OpponentWidget(),
+                          ],
+                        ),
+                      ),
+                    BoardWidget(),
+                    Container(
+                      height: 100,
+                      width: 100,
+                      child: DiceWidget(),
+                    ),
+                    SizedBox(height: 10),
+                    IgnorePointer(//quando il tempo arriva a 0 la mano non è cliccabile
+                      ignoring: _timerExpired,
+                      child: PlayerHandWidget()
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+        ),
+      );
+    }
+    return MultiProvider(
+      providers: [
+        Provider.value(value: _boardState),
+      ],
+    ); 
   }
 
   @override
@@ -161,6 +344,19 @@ return MultiProvider(
     if (!mounted) return;
 
     GoRouter.of(context).go('/play/won', extra: {'score': score});
+  }
+
+  static SizedBox getGapHeight(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    double screenHeight = MediaQuery.of(context).size.height;
+    var padding;
+    if (screenHeight > 780) {
+      padding = mediaQuery.size.width * 0.19;
+    } else {
+      padding = mediaQuery.size.width * 0.08;
+    }
+
+    return SizedBox(height: padding);
   }
 }
 

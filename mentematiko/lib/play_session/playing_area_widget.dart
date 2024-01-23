@@ -66,8 +66,205 @@ class _PlayingAreaWidgetState extends State<PlayingAreaWidget> {
   }
 
   void _onDragAccept(PlayingCardDragData data) {
-    widget.area.acceptCard(data.card);
-    data.holder.removeCard(data.card);
+    bool? flagWarranty=false;
+    
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        List<String> selections = [];
+        return SimpleDialog(
+          title: Text('Seleziona una o più azioni'),
+          children: [
+             StatefulBuilder(
+                builder: (BuildContext context, StateSetter setState) {
+                  return Column(
+                    children: [
+                      CheckboxListTile(
+                        tristate: false,
+                        value: (selections.contains('Divisore')),
+                        title: Text('Divisore'),
+                        onChanged: (value) {
+                          setState(() {
+                            flagWarranty = value;
+                            if (value != null) {
+                              selections.add('Divisore');
+                            }
+                          });
+                        },
+                      ),
+                      CheckboxListTile(
+                        tristate: false,
+                        value: (selections.contains('Multiplo')),
+                        title: Text('Multiplo'),
+                        onChanged: (value) {
+                          setState(() {
+                            flagWarranty = value;
+                            if (value != null) {
+                              selections.add('Multiplo');
+                            }
+                          });
+                        },
+                      ),
+                      CheckboxListTile(
+                        tristate: false,
+                        value: (selections.contains('Speculare')),
+                        title: Text('Speculare'),
+                        onChanged: (value) {
+                          setState(() {
+                            flagWarranty = value;
+                            if (value != null) {
+                              selections.add('Speculare');
+                            }
+                          });
+                        },
+                      ),
+                      CheckboxListTile(
+                        tristate: false,
+                        value: (selections.contains('Numero primo')),
+                        title: Text('Numero primo'),
+                        onChanged: (value) {
+                          setState(() {
+                            flagWarranty = value;
+                            if (value != null) {
+                              selections.add('Numero primo');
+                            }
+                          });
+                        },
+                      ),
+                      CheckboxListTile(
+                        tristate: false,
+                        value: (selections.contains('0')),
+                        title: Text('0'),
+                        onChanged: (value) {
+                          setState(() {
+                            flagWarranty = value;
+                            if (value != null) {
+                              selections.add('0');
+                            }
+                          });
+                        },
+                      ),
+                      CheckboxListTile(
+                        tristate: false,
+                        value: (selections.contains('EC != 0')),
+                        title: Text('EC != 0'),
+                        onChanged: (value) {
+                          setState(() {
+                            flagWarranty = value;
+                            if (value != null) {
+                              selections.add('EC != 0');
+                            }
+                          });
+                        },
+                      ),
+                      CheckboxListTile(
+                        tristate: false,
+                        value: (selections.contains('Quadrato')),
+                        title: Text('Quadrato'),
+                        onChanged: (value) {
+                          setState(() {
+                            flagWarranty = value;
+                            if (value != null) {
+                              selections.add('Quadrato');
+                            }
+                          });
+                        },
+                      ),
+                      CheckboxListTile(
+                        tristate: false,
+                        value: (selections.contains('Perfetto')),
+                        title: Text('Perfetto'),
+                        onChanged: (value) {
+                          setState(() {
+                            flagWarranty = value;
+                            if (value != null) {
+                              selections.add('Perfetto');
+                            }
+                          });
+                        },
+                      ),
+                      CheckboxListTile(
+                        tristate: false,
+                        value: (selections.contains('Complementare')),
+                        title: Text('Complementare'),
+                        onChanged: (value) {
+                          setState(() {
+                            flagWarranty = value;
+                            if (value != null) {
+                              selections.add('Complementare');
+                            }
+                          });
+                        },
+                      ),
+                      CheckboxListTile(
+                        tristate: false,
+                        value: (selections.contains('Cubo')),
+                        title: Text('Cubo'),
+                        onChanged: (value) {
+                          setState(() {
+                            flagWarranty = value;
+                            if (value != null) {
+                              selections.add('Cubo');
+                            }
+                          });
+                        },
+                      ),
+                      CheckboxListTile(
+                        tristate: false,
+                        value: (selections.contains('m.c.m.')),
+                        title: Text('m.c.m.'),
+                        onChanged: (value) {
+                          setState(() {
+                            flagWarranty = value;
+                            if (value != null) {
+                              selections.add('m.c.m.');
+                            }
+                          });
+                        },
+                      ),
+                      CheckboxListTile(
+                        tristate: false,
+                        value: (selections.contains('M.C.D.')),
+                        title: Text('M.C.D.'),
+                        onChanged: (value) {
+                          setState(() {
+                            flagWarranty = value;
+                            if (value != null) {
+                              selections.add('M.C.D.');
+                            }
+                          });
+                        },
+                      ),
+                      CheckboxListTile(
+                        tristate: false,
+                        value: (selections.contains('Liscia')),
+                        title: Text('Liscia'),
+                        onChanged: (value) {
+                          setState(() {
+                            flagWarranty = value;
+                            if (value != null) {
+                              selections.add('Liscia');
+                            }
+                          });
+                        },
+                      ),
+                    ]
+                  );
+                }
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  //TODO aggiungere regole
+                  widget.area.acceptCard(data.card);
+                  data.holder.removeCard(data.card);
+                  Navigator.pop(context);
+                },
+                child: Text('Sottometti'),
+              ),
+          ],
+        );
+      },
+    );
     setState(() => isHighlighted = false);
   }
 

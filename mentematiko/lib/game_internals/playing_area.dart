@@ -62,46 +62,46 @@ class PlayingArea {
   }
 
   ///show played cards
-void showPlateCard(BuildContext context){
-  List<String> cardsToDisplay = ['assets/cards/carteNumerike/CARTA NUMERIKA 002 - REGINA.png',
-  'assets/cards/carteNumerike/CARTA NUMERIKA 002 - REGINA.png', 
-  'assets/cards/carteNumerike/CARTA NUMERIKA 002 - REGINA.png',
-  'assets/cards/carteNumerike/CARTA NUMERIKA 002 - REGINA.png',
-  'assets/cards/carteNumerike/CARTA NUMERIKA 002 - REGINA.png',
-  'assets/cards/carteNumerike/CARTA NUMERIKA 002 - REGINA.png',
-  'assets/cards/carteNumerike/CARTA NUMERIKA 002 - REGINA.png',
-  'assets/cards/carteNumerike/CARTA NUMERIKA 002 - REGINA.png',
-  'assets/cards/carteNumerike/CARTA NUMERIKA 002 - REGINA.png'];// replace this with the actual list of cards to display
+  void showPlateCard(BuildContext context){
+    List<String> cardsToDisplay = ['assets/cards/carteNumerike/CARTA NUMERIKA 002 - REGINA.png',
+    'assets/cards/carteNumerike/CARTA NUMERIKA 002 - REGINA.png', 
+    'assets/cards/carteNumerike/CARTA NUMERIKA 002 - REGINA.png',
+    'assets/cards/carteNumerike/CARTA NUMERIKA 002 - REGINA.png',
+    'assets/cards/carteNumerike/CARTA NUMERIKA 002 - REGINA.png',
+    'assets/cards/carteNumerike/CARTA NUMERIKA 002 - REGINA.png',
+    'assets/cards/carteNumerike/CARTA NUMERIKA 002 - REGINA.png',
+    'assets/cards/carteNumerike/CARTA NUMERIKA 002 - REGINA.png',
+    'assets/cards/carteNumerike/CARTA NUMERIKA 002 - REGINA.png'];// replace this with the actual list of cards to display
   
-  int numCards = cardsToDisplay.length;
-  int numRows = 2;
-  int numCardsPerRow = (numCards / numRows).ceil();
+    int numCards = cardsToDisplay.length;
+    int numRows = 2;
+    int numCardsPerRow = (numCards / numRows).ceil();
 
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return SimpleDialog(
-        title: Text('Select a Figure'),
-        children: [
-          // display the cards in each row
-          for (int i = 0; i < numRows; i++)
-            Wrap(
-              children: [
-                for (int j = 0; j < numCardsPerRow; j++)
-                  if (i * numCardsPerRow + j < cardsToDisplay.length)
-                    Container(
-                      child: Image.network(
-                        cardsToDisplay[i * numCardsPerRow + j],
-                        height: 110,
-                        width: 100,
-                        fit: BoxFit.contain,
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return SimpleDialog(
+          title: Text('Select a Figure'),
+          children: [
+            // display the cards in each row
+            for (int i = 0; i < numRows; i++)
+              Wrap(
+                children: [
+                  for (int j = 0; j < numCardsPerRow; j++)
+                    if (i * numCardsPerRow + j < cardsToDisplay.length)
+                      Container(
+                        child: Image.network(
+                          cardsToDisplay[i * numCardsPerRow + j],
+                          height: 110,
+                          width: 100,
+                          fit: BoxFit.contain,
+                        ),
                       ),
-                    ),
-              ],
-            ),
-        ],
-      );
-    },
-  );
-}
+                ],
+              ),
+          ],
+        );
+      },
+    );
+  }
 }

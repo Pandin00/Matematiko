@@ -22,10 +22,7 @@ class _BoardWidgetState extends State<BoardWidget> {
   Widget build(BuildContext context) {
     final boardState = context.watch<BoardState>();
 
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
+    return
         Padding(
           padding: const EdgeInsets.all(10),
           child: Wrap(
@@ -34,9 +31,7 @@ class _BoardWidgetState extends State<BoardWidget> {
               PlayingAreaWidget(boardState.areaOne)
             ],
           ),
-        ),
         //PlayerHandWidget(),
-      ],
     );
   }
 }
