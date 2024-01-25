@@ -25,7 +25,7 @@ class Room {
       'players': numberOfPlayers,
       'code': code,
       'numeric_card': numericCards.map((e) => e.toString()).toList(),
-      'eulero_card': euleroCards
+      'eulero_card': euleroCards,
     };
   }
 
