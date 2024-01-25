@@ -2,6 +2,7 @@ import 'dart:js_interop';
 import 'dart:math';
 
 import 'package:card/models/Room.dart';
+import 'package:card/models/playable_cards.dart';
 import 'package:card/models/player.dart';
 import 'package:card/models/room_creation.dart';
 import 'package:card/models/user.dart';
@@ -12,7 +13,7 @@ import 'package:logging/logging.dart';
 class MatchService {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   static final _log = Logger('MatchService');
-  //da decidere quali verranno implementate
+  //da decidere quali verranno implementate [Nessuna]
   final nerdsCard = <String>[
     'Caprone Ugo',
     'Capra Pina',
@@ -44,7 +45,7 @@ class MatchService {
     '0'
   ];
 
-  Future<bool> createRooom(RoomCreation room, User u) async {
+  Future<String> createRooom(RoomCreation room, User u) async {
     //create documents
     var main = firestore.collection('rooms').doc();
 
@@ -58,7 +59,7 @@ class MatchService {
         'playing': false,
       };
 
-      main.collection('players').doc('ARB').set(playerArb);
+      await main.collection('players').doc('ARB').set(playerArb);
     }
 
     //initiliaze tables (numeriche+nerd+eulero)
@@ -77,9 +78,9 @@ class MatchService {
       'eulero_card': eul
     };
 
-    main.set(settingsData);
+    await main.set(settingsData);
 
-    return true;
+    return main.id;
   }
 
   Future<JoinedItem> joinInGame(String code, User user) async {
@@ -109,7 +110,8 @@ class MatchService {
             .collection('players')
             .doc(user.email)
             .set(p.toFirestore());
-        return JoinedItem(querySnapshot.docs.first.id.toString(),querySnapshot.size);    
+        return JoinedItem(
+            querySnapshot.docs.first.id.toString(), currentRoom.numberOfPlayers);
       } else {
         return JoinedItem.fromError("FULL");
       }
@@ -124,7 +126,7 @@ class MatchService {
         .doc(idRoom)
         .collection('players')
         .snapshots();
-
+    
     return data;
   }
 
@@ -142,45 +144,56 @@ class MatchService {
     }
   }
 
-  void updateWhoIsPlaying(String idRoom,User user, bool playing){  
-     var rooms = firestore.collection('rooms');
+  void updateWhoIsPlaying(String idRoom, User user, bool playing) {
+    var rooms = firestore.collection('rooms');
 
-     Map<String, dynamic> update = {
+    Map<String, dynamic> update = {
       'playing': playing,
     };
-       rooms.doc(idRoom)
-      .collection('players')
-      .doc(user.role=='ARB' ? 'ARB' : user.email)
-      .update(update);
+    rooms
+        .doc(idRoom)
+        .collection('players')
+        .doc(user.role == 'ARB' ? 'ARB' : user.email)
+        .update(update);
   }
 
-
-  void distributeCards(String idRoom) async{
-     
-     /* get room by id 
+  void distributeCards(String idRoom) async {
+    /*  get room by id 
         per ogni player prendi le carte
         rimuoveli dall'array & update
         assegnale e fai update su firebase x player
-
      */
 
     var rooms = firestore.collection('rooms');
-    var players = firestore.collection('rooms').doc(idRoom).collection('players');
+    var players =
+        firestore.collection('rooms').doc(idRoom).collection('players');
+    UtilMatchService util = UtilMatchService();
 
-     var roomInfo=await rooms.doc(idRoom).get();
-     Room currentRoom=Room.fromFirestore(roomInfo.data()!);
-    
-    
+    var roomInfo = await rooms.doc(idRoom).get();
+    Room currentRoom = Room.fromFirestore(roomInfo.data()!);
 
+    QuerySnapshot playerInGame = await players.get();
 
+    for (QueryDocumentSnapshot document in playerInGame.docs) {
+      if (document.id != 'ARB') {
+        Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+        List<int> numeriks = util.extractNumbers(currentRoom.numericCards);
+        List<String> eulers = util.extractEulero(currentRoom.euleroCards);
 
+        Player p = Player.fromFirestore(data);
+        p.cards?.addAll(numeriks
+            .map((e) => PlayableCards.buildFromValue(e.toString()))
+            .toList());
+        p.cards?.addAll(eulers
+            .map((e) => PlayableCards.buildFromValue(e.toString()))
+            .toList());
 
-
+        //update card players + room
+        await players.doc(document.id).update(p.toFirestore());
+        await rooms.doc(idRoom).update(currentRoom.toFirestore());
+      }
+    }
   }
-
-
-  
-
 
 /*
   Future<void> fetchData() async {
@@ -250,70 +263,75 @@ class MatchService {
 
     return code;
   }
-
-
-
-
-  
 }
 
+//classi di comodo
+class JoinedItem {
+  String? roomId;
+  int? maxPlayers;
+  String? errorCode;
 
-  //classi di comodo
-class JoinedItem{
-    String? roomCode;
-    int? maxPlayers;
-    String? errorCode;
-
-     JoinedItem(this.roomCode,this.maxPlayers){
-        errorCode='';
-     }
-
-     JoinedItem.fromError(this.errorCode){
-           roomCode='';
-           maxPlayers=-1;
-     }
+  JoinedItem(this.roomId, this.maxPlayers) {
+    errorCode = '';
   }
 
+  JoinedItem.fromError(this.errorCode) {
+    roomId = '';
+    maxPlayers = -1;
+  }
+}
 
-  class UtilMatchService{
-
-     
-     List<int> extractNumbers(List<int> numericCards){
-       int notPrime=7;  // da reg. 7 pari e 2 primi
-       int prime=2;
-       List<int> extracted=List.empty(growable: true);
-       numericCards.forEach((element) {
-          if(isPrime(element)){
-            --prime;
-            extracted.add(element);
-          }else{
-            --notPrime;
-            extracted.add(element);
-          }
-          if(notPrime==0 && prime==0) {
-            return;
-          } 
-       });
-       numericCards.removeWhere((element) => extracted.contains(element)); //da verificare se è reference
-      return extracted;
-     }
-
-
-     bool isPrime(int number) {
-  if (number <= 1) {
-    // 0 and 1 are not prime numbers
-    return false;
+class UtilMatchService {
+  List<int> extractNumbers(List<int> numericCards) {
+    int notPrime = 7; // da reg. 7 non primi e 2 primi
+    int prime = 2;
+    List<int> extracted = List.empty(growable: true);
+    for (var element in numericCards) {
+      if (isPrime(element)) {
+        --prime;
+        extracted.add(element);
+      } else {
+        --notPrime;
+        extracted.add(element);
+      }
+      if (notPrime == 0 && prime == 0) {
+        continue;
+      }
+    }
+    numericCards.removeWhere((element) =>
+        extracted.contains(element)); //da verificare se è reference
+    return extracted;
   }
 
-  for (int i = 2; i <= number / 2; i++) {
-    if (number % i == 0) {
-      // If the number is divisible by any number between 2 and half of itself, it's not prime
+  List<String> extractEulero(List<String> eulero) {
+    List<String> result = [eulero[0]];
+    List<int> removed = [0];
+    for (int i = 1; i < eulero.length; i++) {
+      if (eulero[i] != eulero[0]) {
+        result.add(eulero[i]);
+        removed.add(i);
+      }
+      if (result.length == 2) {
+        break;
+      }
+    }
+    //sono sempre 2 le carte estratte
+    eulero.removeAt(removed[0]);
+    eulero.removeAt(removed[1]);
+    return result;
+  }
+
+  bool isPrime(int number) {
+    if (number <= 1) {
+      // 0 and 1 are not prime numbers
       return false;
     }
-  }
 
-  // If the loop completes without finding a divisor, the number is prime
-  return true;
+    for (int i = 2; i <= number / 2; i++) {
+      if (number % i == 0) {
+        return false;
+      }
+    }
+    return true;
+  }
 }
-
-  }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:card/models/player.dart';
 import 'package:card/models/user.dart';
 import 'package:card/services/match_service.dart';
@@ -11,6 +13,8 @@ class LobbyPage extends StatefulWidget {
   User user;
   MatchService matchService;
   SettingsController sharedController;
+  final StreamController<QuerySnapshot> _streamController =
+      StreamController<QuerySnapshot>.broadcast();
 
   LobbyPage(
       {super.key,
@@ -23,60 +27,65 @@ class LobbyPage extends StatefulWidget {
 }
 
 class _LobbyPageState extends State<LobbyPage> {
-  String? roomCode;
+  String? roomId;
   int? playerSize;
 
   _LobbyPageState();
   @override
   Widget build(BuildContext context) {
-    roomCode = widget.sharedController.getRoomCode();
-    playerSize= widget.sharedController.getMaxPlayer();
+    roomId = widget.sharedController.getRoomCode();
+    playerSize = widget.sharedController.getMaxPlayer();
     return Scaffold(
         appBar: AppBar(
           title: Text('Lobby'),
         ),
         body: StreamBuilder(
-            stream:
-                widget.matchService.getPlayerInRealTime(roomCode ?? 'wrong'),
+            stream: widget.matchService.getPlayerInRealTime(roomId ?? 'wrong'),
             builder:
                 (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
+              if (snapshot.connectionState == ConnectionState.waiting ||
+                  snapshot.hasError ||
+                  !snapshot.hasData) {
                 return Center(
                   child: CircularProgressIndicator(),
                 );
+              } else {
+                return Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Expanded(
+                              child: ListView(
+                            children: snapshot.data!.docs
+                                .map((DocumentSnapshot document) {
+                              Map<String, dynamic> data =
+                                  document.data() as Map<String, dynamic>;
+                              Player p = Player.fromFirestore(data);
+                              return ListTile(
+                                title: Text(p.id.split("§")[1]),
+                                subtitle: Text(p.id.split("§")[0]),
+                              );
+                            }).toList(),
+                          )),
+                          SizedBox(height: 30),
+                          Visibility(
+                              visible: widget.user.role == 'ARB',
+                              child: MyButton(
+                                child: Text('Start Game'),
+                                onPressed: () => {
+                                  if ((snapshot.data!.docs.length - 1) ==
+                                      playerSize)
+                                    {
+                                      GoRouter.of(context)
+                                          .go('/play', extra: widget.user)
+                                    }
+                                },
+                              ))
+                        ]));
+
+                //parte grafica
               }
-
-              return Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Expanded(
-                            child: ListView(
-                          children: snapshot.data!.docs
-                              .map((DocumentSnapshot document) {
-                            Map<String, dynamic> data =
-                                document.data() as Map<String, dynamic>;
-                            Player p = Player.fromFirestore(data);
-                            return ListTile(
-                              title: Text(p.id.split("§")[1]),
-                              subtitle: Text(p.id.split("§")[0]),
-                            );
-                          }).toList(),
-                        )),
-                        SizedBox(height: 30),
-                        Visibility(
-                            visible: widget.user.role == 'ARB',
-                            child: MyButton(child: Text('Start Game'), onPressed: () => {
-                                   if((snapshot.data!.docs.length-1)==playerSize){
-                                        
-                                        GoRouter.of(context).go('/play', extra: widget.user)
-                                   }
-
-                            } ,))
-                      ]));
-
-              //parte grafica
             }));
   }
 }

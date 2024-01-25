@@ -3,16 +3,18 @@
 import 'package:card/models/room_creation.dart';
 import 'package:card/models/user.dart';
 import 'package:card/services/match_service.dart';
+import 'package:card/settings/settings.dart';
 import 'package:card/style/my_button.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 class CreateNewTablePage extends StatefulWidget {
-
-
   final MatchService matchService;
   final User user;
-  const CreateNewTablePage({required Key key,required this.matchService,required this.user}) : super(key: key);
+  const CreateNewTablePage(
+      {required Key key, required this.matchService, required this.user})
+      : super(key: key);
 
   @override
   _CreateNewTablePageState createState() => _CreateNewTablePageState();
@@ -51,7 +53,7 @@ class _CreateNewTablePageState extends State<CreateNewTablePage> {
                   ),
                 ],
               ),
-             
+
               SizedBox(height: 20),
               // Third Row
               Row(
@@ -74,12 +76,24 @@ class _CreateNewTablePageState extends State<CreateNewTablePage> {
               ),
               MyButton(
                 onPressed: () {
-                 int players=int.tryParse( playersController.text) ?? 2;
-                 RoomCreation r=RoomCreation(players: players, minutes: _selectedMinutes);
-                 widget.matchService.createRooom(r,widget.user).then((value) => {
-                    if(value)
-                       GoRouter.of(context).go('/lobby', extra: widget.user)   
-                 });
+                  int players = int.tryParse(playersController.text) ?? 2;
+                  RoomCreation r =
+                      RoomCreation(players: players, minutes: _selectedMinutes);
+                  widget.matchService
+                      .createRooom(r, widget.user)
+                      .then((value) => {
+                            if (value != '')
+                              {
+                                context
+                                    .read<SettingsController>()
+                                    .setRoomCode(value),
+                                context
+                                    .read<SettingsController>()
+                                    .setMaxPlayer(r.players),
+                              }
+                          })
+                      .whenComplete(() => GoRouter.of(context)
+                          .go('/lobby', extra: widget.user));
                 },
                 child: Text('Create Table'),
               ),
