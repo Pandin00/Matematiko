@@ -45,42 +45,43 @@ class MatchService {
     '0'
   ];
 
-  Future<String> createRooom(RoomCreation room, User u) async {
+  Future<List<String>> createRooom(RoomCreation room, User u) async {
     //create documents
     var main = firestore.collection('rooms').doc();
 
     if (u.role == 'ARB') {
       // è sempre un arb che crea la room
-
+      String code = '${u.email}${'§'}${u.nome}';
       Map<String, dynamic> playerArb = {
-        'id': '${u.email}${'§'}${u.nome}',
+        'id': code,
         'point': 0,
         'order': 0,
         'playing': false,
       };
 
       await main.collection('players').doc('ARB').set(playerArb);
+
+      //initiliaze tables (numeriche+nerd+eulero)
+      List<int> numbers = List.generate(49, (index) => index + 2);
+      List<int> shuffled = _shuffleArray(numbers);
+      List<String> nerds = _shuffleArray(List.of(nerdsCard));
+      List<String> eul = _shuffleArray(List.of(eulero));
+
+      //set settings + tables
+      Map<String, dynamic> settingsData = {
+        'time': room.minutes,
+        'players': room.players,
+        'code': 'M${_generateRandomCode(Random(), 5)}',
+        'numeric_card': shuffled,
+        'nerd_card': nerds,
+        'eulero_card': eul
+      };
+
+      await main.set(settingsData);
+
+      return [main.id, code];
     }
-
-    //initiliaze tables (numeriche+nerd+eulero)
-    List<int> numbers = List.generate(49, (index) => index + 2);
-    List<int> shuffled = _shuffleArray(numbers);
-    List<String> nerds = _shuffleArray(List.of(nerdsCard));
-    List<String> eul = _shuffleArray(List.of(eulero));
-
-    //set settings + tables
-    Map<String, dynamic> settingsData = {
-      'time': room.minutes,
-      'players': room.players,
-      'code': 'M${_generateRandomCode(Random(), 5)}',
-      'numeric_card': shuffled,
-      'nerd_card': nerds,
-      'eulero_card': eul
-    };
-
-    await main.set(settingsData);
-
-    return main.id;
+    return [];
   }
 
   Future<JoinedItem> joinInGame(String code, User user) async {
@@ -110,8 +111,8 @@ class MatchService {
             .collection('players')
             .doc(user.email)
             .set(p.toFirestore());
-        return JoinedItem(
-            querySnapshot.docs.first.id.toString(), currentRoom.numberOfPlayers);
+        return JoinedItem(querySnapshot.docs.first.id.toString(),
+            currentRoom.numberOfPlayers);
       } else {
         return JoinedItem.fromError("FULL");
       }
@@ -120,13 +121,14 @@ class MatchService {
     return JoinedItem.fromError("NOT_FOUND");
   }
 
-  Stream<QuerySnapshot<Map<String, dynamic>>> getPlayerInRealTime(String idRoom) {
+  Stream<QuerySnapshot<Map<String, dynamic>>> getPlayerInRealTime(
+      String idRoom) {
     Stream<QuerySnapshot<Map<String, dynamic>>> data = firestore
         .collection('rooms')
         .doc(idRoom)
         .collection('players')
         .snapshots();
-    
+
     return data;
   }
 
@@ -144,20 +146,59 @@ class MatchService {
     }
   }
 
-  void updateWhoIsPlaying(String idRoom, User user, bool playing) {
+  Future<void> updateNextPlayer(String idRoom, int maxPlayers, User usr) async {
+    var players =
+        firestore.collection('rooms').doc(idRoom).collection('players');
+
+    QuerySnapshot<Player> searchById = await players
+        .where('id', isEqualTo: '${usr.email}${'§'}${usr.nome}')
+        .withConverter(
+            fromFirestore: (snapshot, _) =>
+                Player.fromFirestore(snapshot.data()!),
+            toFirestore: (player, _) => {})
+        .get();
+
+    if (searchById.size > 0) {
+      Player current = searchById.docs.first.data();
+      current.playing = false;
+      int next = current.order + 1;
+      if (next > maxPlayers) {
+        next = 1; //ARB è 0 e non gioca
+      }
+      //search next
+      QuerySnapshot<Player> searchByOrder = await players
+          .where('order', isEqualTo: next)
+          .withConverter(
+              fromFirestore: (snapshot, _) =>
+                  Player.fromFirestore(snapshot.data()!),
+              toFirestore: (player, _) => {})
+          .get();
+
+      Player nextPlayer = searchByOrder.docs.first.data();
+      nextPlayer.playing = true;
+      //aggiorna
+      await players
+          .doc(searchByOrder.docs.first.id)
+          .set(nextPlayer.toFirestore());
+      await players.doc(searchById.docs.first.id).set(current.toFirestore());
+    }
+  }
+
+  Future<void> updateWhoIsPlaying(
+      String idRoom, User user, bool playing) async {
     var rooms = firestore.collection('rooms');
 
     Map<String, dynamic> update = {
       'playing': playing,
     };
-    rooms
+    await rooms
         .doc(idRoom)
         .collection('players')
         .doc(user.role == 'ARB' ? 'ARB' : user.email)
         .update(update);
   }
 
-  void distributeCards(String idRoom) async {
+  Future<void> distributeCards(String idRoom) async {
     /*  get room by id 
         per ogni player prendi le carte
         rimuoveli dall'array & update
@@ -171,9 +212,14 @@ class MatchService {
 
     var roomInfo = await rooms.doc(idRoom).get();
     Room currentRoom = Room.fromFirestore(roomInfo.data()!);
+    //make piatto
+    currentRoom.piatto = currentRoom.numericCards
+        .sublist(0, 3)
+        .map((e) => e.toString())
+        .toList();
+    currentRoom.numericCards.removeRange(0, 3);
 
     QuerySnapshot playerInGame = await players.get();
-
     for (QueryDocumentSnapshot document in playerInGame.docs) {
       if (document.id != 'ARB') {
         Map<String, dynamic> data = document.data() as Map<String, dynamic>;
@@ -190,55 +236,12 @@ class MatchService {
 
         //update card players + room
         await players.doc(document.id).update(p.toFirestore());
-        await rooms.doc(idRoom).update(currentRoom.toFirestore());
       }
     }
+    //update room after distribution
+    await rooms.doc(idRoom).update(currentRoom.toFirestore());
   }
 
-/*
-  Future<void> fetchData() async {
-    try {
-      // Reference to the document
-      DocumentReference documentRef = FirebaseFirestore.instance
-          .collection('your_collection')
-          .doc('your_document_id');
-
-      // Get the document
-      DocumentSnapshot documentSnapshot = await documentRef.get();
-
-      // Check if the document exists
-      if (documentSnapshot.exists) {
-        // Access the data in the document
-        Map<String, dynamic> data =
-            documentSnapshot.data() as Map<String, dynamic>;
-
-        // Access a field in the document
-        var fieldValue = data['field_name'];
-
-        // Reference to the subcollection
-        CollectionReference subcollectionRef =
-            documentRef.collection('your_subcollection');
-
-        // Get the documents in the subcollection
-        QuerySnapshot subcollectionSnapshot = await subcollectionRef.get();
-
-        // Iterate through the documents in the subcollection
-        subcollectionSnapshot.docs.forEach((subDoc) {
-          // Access the data in each subdocument
-          Map<String, dynamic> subDocData =
-              subDoc.data() as Map<String, dynamic>;
-
-          // Access a field in the subdocument
-          var subDocFieldValue = subDocData['subfield_name'];
-        });
-      } else {
-        print('Document does not exist');
-      }
-    } catch (e) {
-      print('Error fetching data: $e');
-    }
-  }
-*/
   List<T> _shuffleArray<T>(List<T> array) {
     Random random = Random();
 
@@ -288,18 +291,21 @@ class UtilMatchService {
     List<int> extracted = List.empty(growable: true);
     for (var element in numericCards) {
       if (isPrime(element)) {
-        --prime;
-        extracted.add(element);
+        if (prime > 0) {
+          --prime;
+          extracted.add(element);
+        }
       } else {
-        --notPrime;
-        extracted.add(element);
+        if (notPrime > 0) {
+          --notPrime;
+          extracted.add(element);
+        }
       }
       if (notPrime == 0 && prime == 0) {
-        continue;
+        break;
       }
     }
-    numericCards.removeWhere((element) =>
-        extracted.contains(element)); //da verificare se è reference
+    numericCards.removeWhere((element) => extracted.contains(element));
     return extracted;
   }
 

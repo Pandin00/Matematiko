@@ -15,7 +15,7 @@ class PlayableCards {
   }
 
   static String _resolveType(String element) {
-    if (element is int) {
+    if (int.tryParse(element)!=null) {
       if (element == "0" || element == "1") {
         return "E";
       }

@@ -18,14 +18,12 @@ class Player extends ChangeNotifier {
     this.cards,
   });
 
-  
-
   Map<String, dynamic> toFirestore() {
     return {
       'id': id,
       'point': point,
       'playing': playing,
-      'cards': cards,
+      'cards': cards?.map((e) => e.value.toString()).toList() ?? [],
       'order': order
     };
   }
@@ -36,21 +34,22 @@ class Player extends ChangeNotifier {
         point: data['point'],
         order: data['order'],
         playing: data['playing'] ?? false,
-        cards: data['cards']!=null ?   _convertToPlayable(data['cards']) : List.empty(growable: true));
+        cards: data['cards'] != null
+            ? _convertToPlayable(data['cards'])
+            : List.empty(growable: true));
   }
 
-
-   static  List<PlayableCards> _convertToPlayable(List<dynamic> dynamicList) {
+  static List<PlayableCards> _convertToPlayable(List<dynamic> dynamicList) {
     List<PlayableCards> list = dynamicList
         .map<PlayableCards>((dynamic element) {
-          if(element is int){
-            if(element ==0 || element==1){
+          if (int.tryParse(element) != null) {
+            if (element == 0 || element == 1) {
               return PlayableCards(element.toString(), 'E');
             }
-             return PlayableCards(element.toString(),'N');
-          }else if (element is  String) {
-            if(PlayableCards.checkIfIsEulero(element)){
-              return PlayableCards(element.toString(), 'E'); 
+            return PlayableCards(element.toString(), 'N');
+          } else if (element is String) {
+            if (PlayableCards.checkIfIsEulero(element)) {
+              return PlayableCards(element.toString(), 'E');
             }
             //else if nerd-card (non presenti più)
           }
@@ -61,7 +60,4 @@ class Player extends ChangeNotifier {
 
     return list;
   }
-
-
- 
 }

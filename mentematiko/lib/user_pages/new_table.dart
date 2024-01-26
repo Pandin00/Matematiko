@@ -82,11 +82,11 @@ class _CreateNewTablePageState extends State<CreateNewTablePage> {
                   widget.matchService
                       .createRooom(r, widget.user)
                       .then((value) => {
-                            if (value != '')
+                            if (value.isNotEmpty)
                               {
                                 context
                                     .read<SettingsController>()
-                                    .setRoomCode(value),
+                                    .setRoomCode(value[0]),
                                 context
                                     .read<SettingsController>()
                                     .setMaxPlayer(r.players),

@@ -8,7 +8,11 @@ class Room {
   List<String> nerdCards;
   List<String> euleroCards;
 
+  List<String>? piatto; //piatto del gioco 
+
   List<Player>? players;
+
+
 
   Room(
       {required this.time,
@@ -16,7 +20,11 @@ class Room {
       required this.code,
       required this.numericCards,
       required this.nerdCards,
-      required this.euleroCards});
+      required this.euleroCards,
+      this.piatto});
+
+
+
 
 //nerd-card not used now
   Map<String, dynamic> toFirestore() {
@@ -26,6 +34,7 @@ class Room {
       'code': code,
       'numeric_card': numericCards.map((e) => e.toString()).toList(),
       'eulero_card': euleroCards,
+      'piatto': piatto,
     };
   }
 
@@ -36,7 +45,9 @@ class Room {
         code: data['code'] ?? '',
         numericCards: _convertInt(data['numeric_card']),
         nerdCards: _convertString(data['nerd_card']),
-        euleroCards: _convertString(data['eulero_card']));
+        euleroCards: _convertString(data['eulero_card']),
+        piatto: data['piatto'] != null ? _convertString(data['piatto']) : List.empty()  
+    );
   }
 
   static List<String> _convertString(List<dynamic> dynamicList) {

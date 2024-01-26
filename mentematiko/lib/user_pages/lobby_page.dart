@@ -27,65 +27,82 @@ class LobbyPage extends StatefulWidget {
 }
 
 class _LobbyPageState extends State<LobbyPage> {
-  String? roomId;
+  String? idRoom;
   int? playerSize;
 
   _LobbyPageState();
   @override
   Widget build(BuildContext context) {
-    roomId = widget.sharedController.getRoomCode();
+    idRoom = widget.sharedController.getRoomCode();
     playerSize = widget.sharedController.getMaxPlayer();
     return Scaffold(
-        appBar: AppBar(
-          title: Text('Lobby'),
-        ),
-        body: StreamBuilder(
-            stream: widget.matchService.getPlayerInRealTime(roomId ?? 'wrong'),
-            builder:
-                (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting ||
-                  snapshot.hasError ||
-                  !snapshot.hasData) {
-                return Center(
-                  child: CircularProgressIndicator(),
-                );
-              } else {
-                return Padding(
-                    padding: EdgeInsets.all(16.0),
-                    child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Expanded(
-                              child: ListView(
-                            children: snapshot.data!.docs
-                                .map((DocumentSnapshot document) {
-                              Map<String, dynamic> data =
-                                  document.data() as Map<String, dynamic>;
-                              Player p = Player.fromFirestore(data);
-                              return ListTile(
-                                title: Text(p.id.split("§")[1]),
-                                subtitle: Text(p.id.split("§")[0]),
-                              );
-                            }).toList(),
-                          )),
-                          SizedBox(height: 30),
-                          Visibility(
-                              visible: widget.user.role == 'ARB',
-                              child: MyButton(
-                                child: Text('Start Game'),
-                                onPressed: () => {
-                                  if ((snapshot.data!.docs.length - 1) ==
-                                      playerSize)
-                                    {
-                                      GoRouter.of(context)
-                                          .go('/play', extra: widget.user)
-                                    }
-                                },
-                              ))
-                        ]));
+      appBar: AppBar(
+        title: Text('Lobby'),
+      ),
+      body: StreamBuilder(
+        stream: widget.matchService.getPlayerInRealTime(idRoom ?? 'wrong'),
+        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting ||
+              snapshot.hasError ||
+              !snapshot.hasData) {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          } else {
+            if (isStarted(snapshot)) {
+              GoRouter.of(context).go('/play', extra: widget.user);
+            }
 
-                //parte grafica
-              }
-            }));
+            return Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: ListView(
+                      children:
+                          snapshot.data!.docs.map((DocumentSnapshot document) {
+                        Map<String, dynamic> data =
+                            document.data() as Map<String, dynamic>;
+                        Player p = Player.fromFirestore(data);
+                        return ListTile(
+                          title: Text(p.id.split("§")[1]),
+                          subtitle: Text(p.id.split("§")[0]),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                  SizedBox(height: 30),
+                  Visibility(
+                    visible: widget.user.role == 'ARB',
+                    child: MyButton(
+                      child: Text('Start Game'),
+                      onPressed: () {
+                        if ((snapshot.data!.docs.length - 1) == playerSize) {
+                          widget.matchService.distributeCards(idRoom!)
+                          .whenComplete(() async => await widget.matchService.updateNextPlayer(idRoom!, playerSize!, widget.user)
+                          .whenComplete(() => GoRouter.of(context).go('/play', extra: widget.user)) 
+                          );
+                          
+                        }
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+        },
+      ),
+    );
+  }
+
+  bool isStarted(AsyncSnapshot<QuerySnapshot> snapshot) {
+    //e un player ha order=true
+    if ((snapshot.data!.docs.length - 1) == playerSize) {
+      return false;
+    }
+
+    return false;
   }
 }
