@@ -23,14 +23,15 @@ class LobbyPage extends StatefulWidget {
       required this.sharedController});
 
   @override
-  _LobbyPageState createState() => _LobbyPageState();
+  _LobbyPageState createState() => _LobbyPageState(this.user);
 }
 
 class _LobbyPageState extends State<LobbyPage> {
+  User user;
   String? idRoom;
   int? playerSize;
 
-  _LobbyPageState();
+  _LobbyPageState(this.user);
   @override
   Widget build(BuildContext context) {
     idRoom = widget.sharedController.getRoomCode();
@@ -49,15 +50,27 @@ class _LobbyPageState extends State<LobbyPage> {
               child: CircularProgressIndicator(),
             );
           } else {
-            if (isStarted(snapshot)) {
+            if (isStarted(snapshot, this.user)) {
               GoRouter.of(context).go('/play', extra: widget.user);
             }
-
             return Padding(
               padding: EdgeInsets.all(16.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  FutureBuilder<DocumentSnapshot>(
+                    future: FirebaseFirestore.instance.collection('rooms').doc(idRoom).get(),
+                    builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return CircularProgressIndicator(); // Visualizza un indicatore di caricamento mentre attendi il recupero dei dati.
+                      }
+                      
+                      final roomData = snapshot.data!.data() as Map<String, dynamic>;
+                      final roomCode = roomData['code'];
+
+                      return Text('Il codice della stanza è: $roomCode');
+                    },
+                  ),
                   Expanded(
                     child: ListView(
                       children:
@@ -97,12 +110,26 @@ class _LobbyPageState extends State<LobbyPage> {
     );
   }
 
-  bool isStarted(AsyncSnapshot<QuerySnapshot> snapshot) {
-    //e un player ha order=true
-    if ((snapshot.data!.docs.length - 1) == playerSize) {
+  bool isStarted(AsyncSnapshot<QuerySnapshot> snapshot, User user) {
+    bool foundPlayingPlayer = false;
+
+    if ((snapshot.data!.docs.length - 1) != playerSize) {
       return false;
     }
 
-    return false;
+    for (int i = 0; i < snapshot.data!.docs.length; i++) {
+      DocumentSnapshot document = snapshot.data!.docs[i];
+      Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+      Player p = Player.fromFirestore(data);
+      if (p.id.split("§")[0] == user.email && p.order == 0) {
+        return false;
+      }
+
+      if (p.playing == true) {
+        foundPlayingPlayer = true;
+      }
+    }
+
+    return foundPlayingPlayer;
   }
 }
