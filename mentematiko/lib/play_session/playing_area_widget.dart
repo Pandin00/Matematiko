@@ -344,7 +344,7 @@ class _CardStack extends StatelessWidget {
   List<PlayableCards>? cards;
 
   _CardStack(List<String>? plateCards) {
-    cards = plateCards!.map((e) => PlayableCards.buildFromValue(e)).toList();
+    cards = plateCards != null ? plateCards.map((e) => PlayableCards.buildFromValue(e)).toList().reversed.toList() : null;
   }
 
   @override

@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:card/models/player.dart';
 import 'package:card/models/playable_cards.dart';
+import 'package:card/models/player_actions.dart';
 import 'package:card/models/room.dart';
 
 class Rules {
@@ -21,10 +22,319 @@ class Rules {
   });
 
   // Metodo per eseguire le regole del gioco
-  void eseguiRegoleDelGioco() {
-    // Implementa qui le regole del gioco
-    // Ricorda di fare un check a priori sul valore della carta, 
-    // se è una euler card può fare solo un tot di regole(potrebbe causare errore perché non tutte numeriche)
+  PlayerActions eseguiRegoleDelGioco() {
+    List<String> listaCorretti = [];
+    List<String> listaErrori = [];
+    List<String> allActions = ['divisore', 'multiplo', 'speculare', 'primo', 'zero', 'eulerDiverso', 'quadrato', 'perfetto', 'complementare', 'cubo', 'mcm', 'mcd', 'liscia'];
+
+    if(isNotNumber(playedCard.value)){ //caso in cui la carta giocata non è un numero
+      if(!azioniAllaFineDelPopup.contains('eulerDiverso')){
+         listaErrori.add('eulerDiverso');
+      }
+      for (var element in azioniAllaFineDelPopup) {
+        switch (element){
+          case 'divisore':
+            if(azioniAllaFineDelPopup.contains(element)){
+              listaErrori.add('divisore');
+            }
+            break;
+          case 'multiplo':
+            if(azioniAllaFineDelPopup.contains(element)){
+              listaErrori.add('multiplo');
+            }
+            break;
+          case 'speculare':
+            if(azioniAllaFineDelPopup.contains(element)){
+              listaErrori.add('speculare');
+            }
+            break;
+          case 'primo':
+            if(azioniAllaFineDelPopup.contains(element)){
+              listaErrori.add('primo');
+            }
+            break;
+          case 'zero':
+            if(azioniAllaFineDelPopup.contains(element)){
+              listaErrori.add('zero');
+            }
+            break;
+          case 'eulerDiverso':
+            if(azioniAllaFineDelPopup.contains(element) && isEulerDiversoDaZero(playedCard.value)){
+              listaCorretti.add('eulerDiverso');
+            } else if(!azioniAllaFineDelPopup.contains(element) && isEulerDiversoDaZero(playedCard.value)){
+              listaErrori.add('eulerDiverso');
+            }
+            break;
+          case 'quadrato':
+            if(azioniAllaFineDelPopup.contains(element)){
+              listaErrori.add('quadrato');
+            }
+            break;
+          case 'perfetto':
+            if(azioniAllaFineDelPopup.contains(element)){
+              listaErrori.add('perfetto');
+            }
+            break;
+          case 'complementare':
+            if(azioniAllaFineDelPopup.contains(element)){
+              listaErrori.add('complementare');
+            }
+            break;
+          case 'cubo':
+            if(azioniAllaFineDelPopup.contains(element)){
+              listaErrori.add('cubo');
+            }
+            break;
+          case 'mcm':
+            if(azioniAllaFineDelPopup.contains(element)){
+              listaErrori.add('mcm');
+            }
+            break;
+          case 'mcd':
+            if(azioniAllaFineDelPopup.contains(element)){
+              listaErrori.add('mcd');
+            }
+            break;
+          case 'liscia':
+            if(azioniAllaFineDelPopup.contains(element)){
+              listaErrori.add('liscia');
+            }
+            break;
+        }
+      }
+
+      return PlayerActions(listaCorretti: [...listaCorretti], listaErrori: [...listaErrori]);
+
+    } else if(isNotNumber(tavolo.piatto.last)){ //caso in cui la last card non è un numero
+      int playedCardValue = playedCard.value as int; //do per assodato che la player card sia numerica per condizione sopra
+
+      for (var element in azioniAllaFineDelPopup) {
+        switch (element){
+          case 'divisore':
+            if(azioniAllaFineDelPopup.contains(element)){
+              listaErrori.add('divisore');
+            }
+            break;
+          case 'multiplo':
+            if(azioniAllaFineDelPopup.contains(element)){
+              listaErrori.add('multiplo');
+            }
+            break;
+          case 'speculare':
+            if(azioniAllaFineDelPopup.contains(element)){
+              listaErrori.add('speculare');
+            }
+            break;
+          case 'primo':
+            if(isPrime(playedCardValue) && azioniAllaFineDelPopup.contains('primo')){
+              listaCorretti.add('primo');
+            } else if(isPrime(playedCardValue) && !azioniAllaFineDelPopup.contains('primo')){
+              listaErrori.add('primo');
+            } else if(!isPrime(playedCardValue) && azioniAllaFineDelPopup.contains('primo')){
+              listaErrori.add('primo');
+            }
+            break;
+          case 'zero':
+            if(isZero(playedCardValue) && azioniAllaFineDelPopup.contains('zero')){
+              listaCorretti.add('zero');
+            } else if(isZero(playedCardValue) && !azioniAllaFineDelPopup.contains('zero')){
+              listaErrori.add('zero');
+            } else if(!isZero(playedCardValue) && azioniAllaFineDelPopup.contains('zero')){
+              listaErrori.add('zero');
+            }
+            break;
+          case 'eulerDiverso':
+            if(isEulerDiversoDaZero(playedCardValue as String) && azioniAllaFineDelPopup.contains('eulerDiverso')){
+              listaCorretti.add('eulerDiverso');
+            } else if(isEulerDiversoDaZero(playedCardValue as String) && !azioniAllaFineDelPopup.contains('eulerDiverso')){
+              listaErrori.add('eulerDiverso');
+            } else if(!isEulerDiversoDaZero(playedCardValue as String) && azioniAllaFineDelPopup.contains('eulerDiverso')){
+              listaErrori.add('eulerDiverso');
+            }
+            break;
+          case 'quadrato':
+            if(isSquare(playedCardValue) && azioniAllaFineDelPopup.contains('quadrato')){
+              listaCorretti.add('quadrato');
+            } else if(isSquare(playedCardValue) && !azioniAllaFineDelPopup.contains('quadrato')){
+              listaErrori.add('quadrato');
+            } else if(!isSquare(playedCardValue) && azioniAllaFineDelPopup.contains('quadrato')){
+              listaErrori.add('quadrato');
+            }
+            break;
+          case 'perfetto':
+            if(isPerfectNumber(playedCardValue) && azioniAllaFineDelPopup.contains('perfetto')){
+              listaCorretti.add('perfetto');
+            } else if(isPerfectNumber(playedCardValue) && !azioniAllaFineDelPopup.contains('perfetto')){
+              listaErrori.add('perfetto');
+            } else if(!isPerfectNumber(playedCardValue) && azioniAllaFineDelPopup.contains('perfetto')){
+              listaErrori.add('perfetto');
+            }
+            break;
+          case 'complementare':
+            if(azioniAllaFineDelPopup.contains(element)){
+              listaErrori.add('complementare');
+            }
+            break;
+          case 'cubo':
+            if(isCube(playedCardValue) && azioniAllaFineDelPopup.contains('cubo')){
+              listaCorretti.add('cubo');
+            } else if(isCube(playedCardValue) && !azioniAllaFineDelPopup.contains('cubo')){
+              listaErrori.add('cubo');
+            } else if(!isCube(playedCardValue) && azioniAllaFineDelPopup.contains('cubo')){
+              listaErrori.add('cubo');
+            }
+            break;
+          case 'mcm':
+            if(azioniAllaFineDelPopup.contains(element)){
+              listaErrori.add('mcm');
+            }
+            break;
+          case 'mcd':
+            if(azioniAllaFineDelPopup.contains(element)){
+              listaErrori.add('mcd');
+            }
+            break;
+          case 'liscia':
+            if(isLiscia(tavolo.piatto, tavolo.piatto.last, playedCard.value) && azioniAllaFineDelPopup.contains('liscia')){
+              listaCorretti.add('liscia');
+            } else if(isLiscia(tavolo.piatto, tavolo.piatto.last, playedCard.value) && !azioniAllaFineDelPopup.contains('liscia')){
+              listaErrori.add('liscia');
+            } else if(!isLiscia(tavolo.piatto, tavolo.piatto.last, playedCard.value) && azioniAllaFineDelPopup.contains('liscia')){
+              listaErrori.add('liscia');
+            }
+            break;
+        }
+      }
+
+      return PlayerActions(listaCorretti: [...listaCorretti], listaErrori: [...listaErrori]);
+
+    }else { // last card e carta giocata numeri
+      int lastCardValue = tavolo.piatto.last as int;
+      int playedCardValue = playedCard.value as int;
+      for (var element in allActions) {
+        switch (element){
+          case 'divisore':
+            if(isDivisible(lastCardValue, playedCardValue) && azioniAllaFineDelPopup.contains('divisore')){
+              listaCorretti.add('divisore');
+            } else if(isDivisible(lastCardValue, playedCardValue) && !azioniAllaFineDelPopup.contains('divisore')){
+              listaErrori.add('divisore');
+            } else if(!isDivisible(lastCardValue, playedCardValue) && azioniAllaFineDelPopup.contains('divisore')){
+              listaErrori.add('divisore');
+            }
+            break;
+          case 'moltiplo':
+            if(isMultiple(lastCardValue, playedCardValue) && azioniAllaFineDelPopup.contains('moltiplo')){
+              listaCorretti.add('moltiplo');
+            } else if(isMultiple(lastCardValue, playedCardValue) && !azioniAllaFineDelPopup.contains('moltiplo')){
+              listaErrori.add('moltiplo');
+            } else if(!isMultiple(lastCardValue, playedCardValue) && azioniAllaFineDelPopup.contains('moltiplo')){
+              listaErrori.add('moltiplo');
+            }
+            break;
+          case 'speculare':
+            if(isSpecular(lastCardValue, playedCardValue) && azioniAllaFineDelPopup.contains('speculare')){
+              listaCorretti.add('speculare');
+            } else if(isSpecular(lastCardValue, playedCardValue) && !azioniAllaFineDelPopup.contains('speculare')){
+              listaErrori.add('speculare');
+            } else if(!isSpecular(lastCardValue, playedCardValue) && azioniAllaFineDelPopup.contains('speculare')){
+              listaErrori.add('speculare');
+            }
+            break;
+          case 'primo':
+            if(isPrime(playedCardValue) && azioniAllaFineDelPopup.contains('primo')){
+              listaCorretti.add('primo');
+            } else if(isPrime(playedCardValue) && !azioniAllaFineDelPopup.contains('primo')){
+              listaErrori.add('primo');
+            } else if(!isPrime(playedCardValue) && azioniAllaFineDelPopup.contains('primo')){
+              listaErrori.add('primo');
+            }
+            break;
+          case 'zero':
+            if(isZero(playedCardValue) && azioniAllaFineDelPopup.contains('zero')){
+              listaCorretti.add('zero');
+            } else if(isZero(playedCardValue) && !azioniAllaFineDelPopup.contains('zero')){
+              listaErrori.add('zero');
+            } else if(!isZero(playedCardValue) && azioniAllaFineDelPopup.contains('zero')){
+              listaErrori.add('zero');
+            }
+            break;
+          case 'eulerDiverso':
+            if(isEulerDiversoDaZero(playedCardValue as String) && azioniAllaFineDelPopup.contains('eulerDiverso')){
+              listaCorretti.add('eulerDiverso');
+            } else if(isEulerDiversoDaZero(playedCardValue as String) && !azioniAllaFineDelPopup.contains('eulerDiverso')){
+              listaErrori.add('eulerDiverso');
+            } else if(!isEulerDiversoDaZero(playedCardValue as String) && azioniAllaFineDelPopup.contains('eulerDiverso')){
+              listaErrori.add('eulerDiverso');
+            }
+            break;
+          case 'quadrato':
+            if(isSquare(playedCardValue) && azioniAllaFineDelPopup.contains('quadrato')){
+              listaCorretti.add('quadrato');
+            } else if(isSquare(playedCardValue) && !azioniAllaFineDelPopup.contains('quadrato')){
+              listaErrori.add('quadrato');
+            } else if(!isSquare(playedCardValue) && azioniAllaFineDelPopup.contains('quadrato')){
+              listaErrori.add('quadrato');
+            }
+            break;
+          case 'perfetto':
+            if(isPerfectNumber(playedCardValue) && azioniAllaFineDelPopup.contains('perfetto')){
+              listaCorretti.add('perfetto');
+            } else if(isPerfectNumber(playedCardValue) && !azioniAllaFineDelPopup.contains('perfetto')){
+              listaErrori.add('perfetto');
+            } else if(!isPerfectNumber(playedCardValue) && azioniAllaFineDelPopup.contains('perfetto')){
+              listaErrori.add('perfetto');
+            }
+            break;
+          case 'complementare':
+            if(complementare(lastCardValue, playedCardValue) && azioniAllaFineDelPopup.contains('complementare')){
+              listaCorretti.add('complementare');
+            } else if(complementare(lastCardValue, playedCardValue) && !azioniAllaFineDelPopup.contains('complementare')){
+              listaErrori.add('complementare');
+            } else if(!complementare(lastCardValue, playedCardValue) && azioniAllaFineDelPopup.contains('complementare')){
+              listaErrori.add('complementare');
+            }
+            break;
+          case 'cubo':
+            if(isCube(playedCardValue) && azioniAllaFineDelPopup.contains('cubo')){
+              listaCorretti.add('cubo');
+            } else if(isCube(playedCardValue) && !azioniAllaFineDelPopup.contains('cubo')){
+              listaErrori.add('cubo');
+            } else if(!isCube(playedCardValue) && azioniAllaFineDelPopup.contains('cubo')){
+              listaErrori.add('cubo');
+            }
+            break;
+          case 'mcm':
+            if(isMcm(tavolo.piatto, playedCardValue) && azioniAllaFineDelPopup.contains('mcm')){
+              listaCorretti.add('mcm');
+            } else if(isMcm(tavolo.piatto, playedCardValue) && !azioniAllaFineDelPopup.contains('mcm')){
+              listaErrori.add('mcm');
+            } else if(!isMcm(tavolo.piatto, playedCardValue) && azioniAllaFineDelPopup.contains('mcm')){
+              listaErrori.add('mcm');
+            }
+            break;
+          case 'mcd':
+            if(isMCD(tavolo.piatto, playedCardValue) && azioniAllaFineDelPopup.contains('mcd')){
+              listaCorretti.add('mcd');
+            } else if(isMCD(tavolo.piatto, playedCardValue) && !azioniAllaFineDelPopup.contains('mcd')){
+              listaErrori.add('mcd');
+            } else if(!isMCD(tavolo.piatto, playedCardValue) && azioniAllaFineDelPopup.contains('mcd')){
+              listaErrori.add('mcd');
+            }
+            break;
+          case 'liscia':
+            if(isLiscia(tavolo.piatto, tavolo.piatto.last, playedCard.value) && azioniAllaFineDelPopup.contains('liscia')){
+              listaCorretti.add('liscia');
+            } else if(isLiscia(tavolo.piatto, tavolo.piatto.last, playedCard.value) && !azioniAllaFineDelPopup.contains('liscia')){
+              listaErrori.add('liscia');
+            } else if(!isLiscia(tavolo.piatto, tavolo.piatto.last, playedCard.value) && azioniAllaFineDelPopup.contains('liscia')){
+              listaErrori.add('liscia');
+            }
+            break;
+        }
+      }
+
+      return PlayerActions(listaCorretti: [...listaCorretti], listaErrori: [...listaErrori]);
+    }
   }
 
   void divisoreEffetti(){
@@ -92,9 +402,6 @@ class Rules {
   }
 
   bool isNotNumber(String str) {
-    // Utilizziamo il metodo "tryParse" per convertire la stringa in un numero
-    // Se la conversione ha successo, allora la stringa è un numero
-    // Altrimenti, se il risultato è null, la stringa non è un numero
     return double.tryParse(str) == null;
   }
 
@@ -102,6 +409,17 @@ class Rules {
   bool isSquare(int number) {
     int squareRoot = sqrt(number).toInt();
     return squareRoot * squareRoot == number;
+  }
+
+  // Regola numero perfetto
+  bool isPerfectNumber(int number) {
+    int sum = 0;
+    for (int i = 1; i < number; i++) {
+      if (number % i == 0) {
+        sum += i;
+      }
+    }
+    return sum == number;
   }
 
   //Regola complementare
@@ -120,13 +438,23 @@ class Rules {
   }
 
   //Regola del mcm
-  bool isMcm(List<int> cardsValues, int card) {
-    return mcmOfList(cardsValues) ==  card;
+  bool isMcm(List<String> cardsValues, int card) {
+    if (!cardsValues.every((value) => int.tryParse(value) != null)) {
+      return false;
+    }
+
+    List<int> intValues = cardsValues.map((value) => int.parse(value)).toList();
+    return mcmOfList(intValues) == card;
   }
 
   //Regola dell'MCD
-  bool isMCD(List<int> cardsValues, int card){
-    return mcdOfList(cardsValues) == card;
+  bool isMCD(List<String> cardsValues, int card){
+    if (!cardsValues.every((value) => int.tryParse(value) != null)) {
+      return false;
+    }
+
+    List<int> intValues = cardsValues.map((value) => int.parse(value)).toList();  
+    return mcdOfList(intValues) == card;
   }
 
   // Funzione per calcolare il massimo comune divisore (MCD) di una lista di numeri
@@ -182,15 +510,7 @@ class Rules {
       return false;
     }
 
-    //questo controllo è da implementare anche prima di chiamare i controlli su MCD e mcm
-    for (String str in cardsValues) {
-      if (isNotNumber(str)) {
-        return true; // do per assodato che con un valore non numerico non possa essere fatto MCD e mcm
-      }
-    }
-
-    List<int> cardsNumeric = cardsValues.map((str) => int.parse(str)).toList();
-    if(isMCD(cardsNumeric, lastCardValue) || isMcm(cardsNumeric, lastCardValue)){
+    if(isMCD(cardsValues, lastCardValue) || isMcm(cardsValues, lastCardValue)){
       return false;
     }
 

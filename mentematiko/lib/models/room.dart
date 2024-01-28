@@ -8,7 +8,7 @@ class Room {
   List<String> nerdCards;
   List<String> euleroCards;
 
-  List<String>? piatto; //piatto del gioco 
+  List<String> piatto; //piatto del gioco 
 
   List<Player>? players;
 
@@ -21,7 +21,7 @@ class Room {
       required this.numericCards,
       required this.nerdCards,
       required this.euleroCards,
-      this.piatto});
+      required this.piatto});
 
 
 
