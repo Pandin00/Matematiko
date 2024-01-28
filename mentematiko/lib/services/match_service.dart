@@ -1,4 +1,3 @@
-import 'dart:js_interop';
 import 'dart:math';
 
 import 'package:card/models/Room.dart';
@@ -6,7 +5,6 @@ import 'package:card/models/playable_cards.dart';
 import 'package:card/models/player.dart';
 import 'package:card/models/room_creation.dart';
 import 'package:card/models/user.dart';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:logging/logging.dart';
 
@@ -121,7 +119,7 @@ class MatchService {
     return JoinedItem.fromError("NOT_FOUND");
   }
 
-  Stream<QuerySnapshot<Map<String, dynamic>>> getPlayerInRealTime(
+  Stream<QuerySnapshot<Map<String, dynamic>>> getPlayersInRealTime(
       String idRoom) {
     Stream<QuerySnapshot<Map<String, dynamic>>> data = firestore
         .collection('rooms')
@@ -130,6 +128,21 @@ class MatchService {
         .snapshots();
 
     return data;
+  }
+
+  Stream<DocumentSnapshot<Map<String, dynamic>>> getRoomTableInRealTime(
+      String idRoom) {
+    return firestore.collection('rooms').doc(idRoom).snapshots();
+  }
+
+  Stream<DocumentSnapshot<Map<String, dynamic>>> getPlayerInRealTime(
+      String idRoom, String idPlayer) {
+    return firestore
+        .collection('rooms')
+        .doc(idRoom)
+        .collection('players')
+        .doc(idPlayer)
+        .snapshots();
   }
 
   Future<int> getDocumentCountOnRooms(String id, String collection) async {
@@ -146,7 +159,7 @@ class MatchService {
     }
   }
 
-  Future<void> updateNextPlayer(String idRoom, int maxPlayers, User usr) async {
+  Future<Player?> searchByUser(String idRoom, User usr) async {
     var players =
         firestore.collection('rooms').doc(idRoom).collection('players');
 
@@ -157,9 +170,39 @@ class MatchService {
                 Player.fromFirestore(snapshot.data()!),
             toFirestore: (player, _) => {})
         .get();
-
     if (searchById.size > 0) {
-      Player current = searchById.docs.first.data();
+      return searchById.docs.first.data();
+    } else {
+      return null;
+    }
+  }
+
+  Future<Player?> searchByOrder(String idRoom, int order ) async {
+    var players =
+        firestore.collection('rooms').doc(idRoom).collection('players');
+
+    QuerySnapshot<Player> searchById = await players
+        .where('order', isEqualTo: order)
+        .withConverter(
+            fromFirestore: (snapshot, _) =>
+                Player.fromFirestore(snapshot.data()!),
+            toFirestore: (player, _) => {})
+        .get();
+    if (searchById.size > 0) {
+      return searchById.docs.first.data();
+    } else {
+      return null;
+    }
+  }
+
+  Future<void> updateNextPlayer(String idRoom, int maxPlayers, User usr) async {
+    var players =
+        firestore.collection('rooms').doc(idRoom).collection('players');
+
+    Player? current = await searchByUser(idRoom, usr);
+
+    if (current != null) {
+      String currentId = usr.role == 'ARB' ? 'ARB' : current.id.split('§')[0];
       current.playing = false;
       int next = current.order + 1;
       if (next > maxPlayers) {
@@ -180,8 +223,37 @@ class MatchService {
       await players
           .doc(searchByOrder.docs.first.id)
           .set(nextPlayer.toFirestore());
-      await players.doc(searchById.docs.first.id).set(current.toFirestore());
+      await players.doc(currentId).set(current.toFirestore());
     }
+  }
+
+
+  Future<void> updateNextPlayerByCurrentPlayer(String idRoom, int maxPlayers, Player current) async {
+    var players =
+        firestore.collection('rooms').doc(idRoom).collection('players');
+      String currentId = current.order == 0 ? 'ARB' : current.id.split('§')[0];
+      current.playing = false;
+      int next = current.order + 1;
+      if (next > maxPlayers) {
+        next = 1; //ARB è 0 e non gioca
+      }
+      //search next
+      QuerySnapshot<Player> searchByOrder = await players
+          .where('order', isEqualTo: next)
+          .withConverter(
+              fromFirestore: (snapshot, _) =>
+                  Player.fromFirestore(snapshot.data()!),
+              toFirestore: (player, _) => {})
+          .get();
+
+      Player nextPlayer = searchByOrder.docs.first.data();
+      nextPlayer.playing = true;
+      //aggiorna
+      await players
+          .doc(searchByOrder.docs.first.id)
+          .set(nextPlayer.toFirestore());
+      await players.doc(currentId).set(current.toFirestore());
+    
   }
 
   Future<void> updateWhoIsPlaying(

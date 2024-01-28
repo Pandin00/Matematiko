@@ -4,31 +4,35 @@
 
 import 'dart:async';
 
-import 'package:card/models/user.dart';
+import 'package:card/models/player.dart';
 import 'package:card/play_session/dice_widget.dart';
 import 'package:card/play_session/opponent_widget.dart';
 import 'package:card/play_session/player_hand_widget.dart';
+import 'package:card/services/match_service.dart';
+import 'package:card/settings/settings.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:logging/logging.dart' hide Level;
 import 'package:provider/provider.dart';
 import '../audio/audio_controller.dart';
 import '../audio/sounds.dart';
 import '../game_internals/board_state.dart';
-import '../game_internals/score.dart';
 import '../style/palette.dart';
 import 'board_widget.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import '../multiplayer/firestore_controller.dart';
+
 /// This widget defines the entirety of the screen that the player sees when
 /// they are playing a level.
 ///
 /// It is a stateful widget because it manages some state of its own,
 /// such as whether the game is in a "celebration" state.
 class PlaySessionScreen extends StatefulWidget {
-  final User user;
-  
-  const PlaySessionScreen({super.key, required this.user});
+  final Player currentPlayer;
+  final SettingsController sharedController;
+  final MatchService matchService;
+  const PlaySessionScreen(
+      {super.key,
+      required this.currentPlayer,
+      required this.sharedController,
+      required this.matchService});
 
   @override
   State<PlaySessionScreen> createState() => _PlaySessionScreenState();
@@ -36,8 +40,8 @@ class PlaySessionScreen extends StatefulWidget {
 
 class _PlaySessionScreenState extends State<PlaySessionScreen> {
   static final _log = Logger('PlaySessionScreen');
-  int numberOfPlayers = 6;
-  FirestoreController? _firestoreController;
+  int numberOfPlayers = 2;
+  String? idRoom;
 
   static const _celebrationDuration = Duration(milliseconds: 2000);
 
@@ -50,22 +54,20 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
   late final BoardState _boardState;
   bool _timerExpired = false;
 
+  List<int> orders = List.empty(growable: true);
+
   @override
   Widget build(BuildContext context) {
     final palette = context.watch<Palette>();
     switch (numberOfPlayers) {
       case > 4:
-      return MultiProvider(
-        providers: [
-          Provider.value(value: _boardState),
-        ],
-        child: IgnorePointer(
-        ignoring: _duringCelebration,
-        child: Scaffold(
-          backgroundColor: palette.backgroundPlaySession,
-          body: LayoutBuilder(
-            builder: (context, constraints) {
-              // Schermo grande, utilizza un layout diverso
+        return IgnorePointer(
+          ignoring: _duringCelebration,
+          child: Scaffold(
+            backgroundColor: palette.backgroundPlaySession,
+            body: LayoutBuilder(
+              builder: (context, constraints) {
+                // Schermo grande, utilizza un layout diverso
                 return Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -83,108 +85,101 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                       ],
                     ),
                     Expanded(
-                        child: GridView.count(
-                        crossAxisCount: numberOfPlayers-3,
-                        children:
-                        [
-                          for (int i = 0; i < numberOfPlayers-3; i++) OpponentWidget(),
+                      child: GridView.count(
+                        crossAxisCount: numberOfPlayers - 3,
+                        children: [
+                          for (int i = 0; i < numberOfPlayers - 3; i++)
+                            OpponentWidget(matchService: widget.matchService,idRoom: idRoom!, order: orders[i]),
                         ],
                       ),
                     ),
                     Expanded(
-                        child: GridView.count(
+                      child: GridView.count(
                         crossAxisCount: 3,
-                        children:
-                        [
-                          OpponentWidget(),
-                          BoardWidget(),
-                          OpponentWidget(),                
+                        children: [
+                          OpponentWidget(matchService: widget.matchService,idRoom: idRoom!, order: orders[numberOfPlayers-3]),
+                          BoardWidget(boardState: _boardState),
+                           OpponentWidget(matchService: widget.matchService,idRoom: idRoom!, order: orders[numberOfPlayers-2]),
                         ],
                       ),
-                    ),
-                  Container(
-                    height: 100,
-                    width: 100,
-                    child: DiceWidget(),
-                  ),
-                  IgnorePointer(//quando il tempo arriva a 0 la mano non è cliccabile
-                    ignoring: _timerExpired,
-                    child: PlayerHandWidget()
-                  ),],
-                );
-              },
-            ),
-          ),
-        ),
-      );
-      case 2:
-      return MultiProvider(
-        providers: [
-          Provider.value(value: _boardState),
-        ],
-        child: IgnorePointer(
-        ignoring: _duringCelebration,
-        child: Scaffold(
-          backgroundColor: palette.backgroundPlaySession,
-          body: LayoutBuilder(
-            builder: (context, constraints) {
-              // Schermo grande, utilizza un layout diverso
-                return Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        CountdownTimer(
-                          duration: 60,
-                          onTimerExpired: (expired) {
-                            setState(() {
-                              _timerExpired = expired;
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                    Expanded(
-                        child: GridView.count(
-                        crossAxisCount: 1,
-                        children:
-                        [
-                          OpponentWidget(),                
-                        ],
-                      ),
-                    ),
-                    Center(
-                      child: BoardWidget(),
                     ),
                     Container(
                       height: 100,
                       width: 100,
                       child: DiceWidget(),
                     ),
-                    IgnorePointer(//quando il tempo arriva a 0 la mano non è cliccabile
+                    IgnorePointer(
+                      // quando il tempo arriva a 0 la mano non è cliccabile
                       ignoring: _timerExpired,
-                      child: PlayerHandWidget()
+                      child: PlayerHandWidget(boardState: _boardState),
                     ),
                   ],
                 );
               },
             ),
           ),
-        ),
-      );
-    case 3:
-      return MultiProvider(
-        providers: [
-          Provider.value(value: _boardState),
-        ],
-        child: IgnorePointer(
-        ignoring: _duringCelebration,
-        child: Scaffold(
-          backgroundColor: palette.backgroundPlaySession,
-          body: LayoutBuilder(
-            builder: (context, constraints) {
-              // Schermo grande, utilizza un layout diverso
+        );
+      case 2:
+      case 1:
+        return IgnorePointer(
+          ignoring: _duringCelebration,
+          child: Scaffold(
+            backgroundColor: palette.backgroundPlaySession,
+            body: LayoutBuilder(
+              builder: (context, constraints) {
+                // Schermo grande, utilizza un layout diverso
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        CountdownTimer(
+                          duration: 60,
+                          onTimerExpired: (expired) {
+                            // aggiorna turni
+                            setState(() {
+                              _timerExpired = expired;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                    Expanded(
+                      child: GridView.count(
+                        crossAxisCount: 1,
+                        children: [
+                          OpponentWidget(matchService: widget.matchService,idRoom: idRoom!, order: orders[0]),
+                        ],
+                      ),
+                    ),
+                    Center(
+                      child: BoardWidget(boardState: _boardState),
+                    ),
+                    Container(
+                      height: 100,
+                      width: 100,
+                      child: DiceWidget(),
+                    ),
+                    IgnorePointer(
+                      // quando il tempo arriva a 0 la mano non è cliccabile
+                      ignoring: _timerExpired,
+                      child: PlayerHandWidget(boardState: _boardState),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+        );
+      case 3:
+        return IgnorePointer(
+          ignoring: _duringCelebration,
+          child: Scaffold(
+            backgroundColor: palette.backgroundPlaySession,
+            body: LayoutBuilder(
+              builder: (context, constraints) {
+                // Schermo grande, utilizza un layout diverso
                 return Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -202,46 +197,42 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                       ],
                     ),
                     Expanded(
-                        child: GridView.count(
-                          crossAxisCount: 2,
-                          children:
-                          [
-                            OpponentWidget(),
-                            OpponentWidget(),
-                          ],
-                        ),
+                      child: GridView.count(
+                        crossAxisCount: 2,
+                        children: [
+                          OpponentWidget(matchService: widget.matchService,idRoom: idRoom!, order: orders[0]),
+                          OpponentWidget(matchService: widget.matchService,idRoom: idRoom!, order: orders[1]),
+                        ],
                       ),
-                  Expanded(
-                    flex: 1,
-                    child: BoardWidget(),
-                  ),
-                  Container(
-                    height: 100,
-                    width: 100,
-                    child: DiceWidget(),
-                  ),
-                  IgnorePointer(//quando il tempo arriva a 0 la mano non è cliccabile
-                    ignoring: _timerExpired,
-                    child: PlayerHandWidget()
-                  ),],
+                    ),
+                    Expanded(
+                      flex: 1,
+                      child: BoardWidget(boardState: _boardState),
+                    ),
+                    Container(
+                      height: 100,
+                      width: 100,
+                      child: DiceWidget(),
+                    ),
+                    IgnorePointer(
+                      // quando il tempo arriva a 0 la mano non è cliccabile
+                      ignoring: _timerExpired,
+                      child: PlayerHandWidget(boardState: _boardState),
+                    ),
+                  ],
                 );
               },
             ),
           ),
-        ),
-      );
-    case 4:
-      return MultiProvider(
-        providers: [
-          Provider.value(value: _boardState),
-        ],
-        child: IgnorePointer(
-        ignoring: _duringCelebration,
-        child: Scaffold(
-          backgroundColor: palette.backgroundPlaySession,
-          body: LayoutBuilder(
-            builder: (context, constraints) {
-              // Schermo grande, utilizza un layout diverso
+        );
+      case 4:
+        return IgnorePointer(
+          ignoring: _duringCelebration,
+          child: Scaffold(
+            backgroundColor: palette.backgroundPlaySession,
+            body: LayoutBuilder(
+              builder: (context, constraints) {
+                // Schermo grande, utilizza un layout diverso
                 return Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -251,53 +242,48 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                         CountdownTimer(
                           duration: 60,
                           onTimerExpired: (expired) {
-                              setState(() {
-                                _timerExpired = expired;
-                              });
+                            setState(() {
+                              _timerExpired = expired;
+                            });
                           },
-                          ),
+                        ),
                       ],
                     ),
                     Expanded(
-                        child: GridView.count(
-                          crossAxisCount: 3,
-                          children:
-                          [
-                            OpponentWidget(),
-                            OpponentWidget(),
-                            OpponentWidget(),
-                          ],
-                        ),
+                      child: GridView.count(
+                        crossAxisCount: 3,
+                        children: [
+                          OpponentWidget(matchService: widget.matchService,idRoom: idRoom!, order: orders[0]),
+                          OpponentWidget(matchService: widget.matchService,idRoom: idRoom!, order: orders[1]),
+                          OpponentWidget(matchService: widget.matchService,idRoom: idRoom!, order: orders[2]),
+                        ],
                       ),
-                    BoardWidget(),
+                    ),
+                    BoardWidget(boardState: _boardState),
                     Container(
                       height: 100,
                       width: 100,
                       child: DiceWidget(),
                     ),
                     SizedBox(height: 10),
-                    IgnorePointer(//quando il tempo arriva a 0 la mano non è cliccabile
+                    IgnorePointer(
+                      // quando il tempo arriva a 0 la mano non è cliccabile
                       ignoring: _timerExpired,
-                      child: PlayerHandWidget()
+                      child: PlayerHandWidget(boardState: _boardState),
                     ),
                   ],
                 );
               },
             ),
           ),
-        ),
-      );
+        );
     }
-    return MultiProvider(
-      providers: [
-        Provider.value(value: _boardState),
-      ],
-    ); 
+    // Return a widget if numberOfPlayers is not matched
+    return SizedBox.shrink();
   }
 
   @override
   void dispose() {
-    _firestoreController?.dispose();
     _boardState.dispose();
     super.dispose();
   }
@@ -305,25 +291,27 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
   @override
   void initState() {
     super.initState();
-    _startOfPlay = DateTime.now();
-    _boardState = BoardState(onWin: _playerWon);
-    final firestore = context.read<FirebaseFirestore?>();
-    if (firestore == null) {
-      _log.warning("Firestore instance wasn't provided. "
-      "Running without _firestoreController.");
-    } else {
-      _firestoreController = FirestoreController(
-        instance: firestore,
-        boardState: _boardState,
-      );
+    numberOfPlayers = widget.sharedController.getMaxPlayer();
+    //calculate orders for opponent
+    for (int i = 0; i < numberOfPlayers; ++i) {
+      orders.add(i + 1);
     }
+    orders.remove(widget.currentPlayer.order);
+
+    idRoom = widget.sharedController.getRoomCode();
+    _startOfPlay = DateTime.now();
+    _boardState = BoardState(
+        onWin: _playerWon,
+        matchService: widget.matchService,
+        currentPlayer: widget.currentPlayer);
+    _boardState.listeningOnTable(idRoom!);
+    _boardState.listeningOnCurrentPlayer(idRoom!);
   }
 
   Future<void> _playerWon() async {
     _log.info('Player won');
 
     // TODO: replace with some meaningful score for the card game
-    final score = Score(1, 1, DateTime.now().difference(_startOfPlay));
 
     // final playerProgress = context.read<PlayerProgress>();
     // playerProgress.setLevelReached(widget.level.number);
@@ -343,7 +331,7 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
     await Future<void>.delayed(_celebrationDuration);
     if (!mounted) return;
 
-    GoRouter.of(context).go('/play/won', extra: {'score': score});
+    //GoRouter.of(context).go('/play/won', extra: {'score': score});
   }
 
   static SizedBox getGapHeight(BuildContext context) {
@@ -365,10 +353,10 @@ class CountdownTimer extends StatefulWidget {
   final ValueChanged<bool> onTimerExpired;
 
   const CountdownTimer({
-    Key? key,
+    super.key,
     required this.duration,
     required this.onTimerExpired,
-  }) : super(key: key);
+  });
 
   @override
   _CountdownTimerState createState() => _CountdownTimerState();
@@ -424,7 +412,8 @@ class _CountdownTimerState extends State<CountdownTimer> {
         if (_timerExpired)
           const Text(
             'Il tempo è scaduto',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.red),
+            style: TextStyle(
+                fontSize: 24, fontWeight: FontWeight.bold, color: Colors.red),
           ),
       ],
     );

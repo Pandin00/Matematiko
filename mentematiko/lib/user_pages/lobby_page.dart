@@ -23,25 +23,22 @@ class LobbyPage extends StatefulWidget {
       required this.sharedController});
 
   @override
-  _LobbyPageState createState() => _LobbyPageState(this.user);
+  _LobbyPageState createState() => _LobbyPageState();
 }
 
 class _LobbyPageState extends State<LobbyPage> {
-  User user;
   String? idRoom;
   int? playerSize;
-
-  _LobbyPageState(this.user);
+  Player? currentPlayer;
+  _LobbyPageState();
   @override
   Widget build(BuildContext context) {
-    idRoom = widget.sharedController.getRoomCode();
-    playerSize = widget.sharedController.getMaxPlayer();
     return Scaffold(
       appBar: AppBar(
         title: Text('Lobby'),
       ),
       body: StreamBuilder(
-        stream: widget.matchService.getPlayerInRealTime(idRoom ?? 'wrong'),
+        stream: widget.matchService.getPlayersInRealTime(idRoom ?? 'wrong'),
         builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting ||
               snapshot.hasError ||
@@ -50,8 +47,13 @@ class _LobbyPageState extends State<LobbyPage> {
               child: CircularProgressIndicator(),
             );
           } else {
-            if (isStarted(snapshot, this.user)) {
-              GoRouter.of(context).go('/play', extra: widget.user);
+            if (isStarted(snapshot, widget.user)) {
+              widget.matchService
+                    .searchByUser(idRoom!, widget.user)
+                    .then((value) => currentPlayer = value!)
+                    .whenComplete(() => GoRouter.of(context).go('/play', extra: currentPlayer));
+
+              
             }
             return Padding(
               padding: EdgeInsets.all(16.0),
@@ -92,11 +94,17 @@ class _LobbyPageState extends State<LobbyPage> {
                       child: Text('Start Game'),
                       onPressed: () {
                         if ((snapshot.data!.docs.length - 1) == playerSize) {
-                          widget.matchService.distributeCards(idRoom!)
-                          .whenComplete(() async => await widget.matchService.updateNextPlayer(idRoom!, playerSize!, widget.user)
-                          .whenComplete(() => GoRouter.of(context).go('/play', extra: widget.user)) 
-                          );
-                          
+                          widget.matchService
+                              .searchByUser(idRoom!, widget.user)
+                              .then((value) => currentPlayer = value!)
+                              .whenComplete(() => widget.matchService
+                                  .distributeCards(idRoom!)
+                                  .whenComplete(() async => await widget
+                                      .matchService
+                                      .updateNextPlayer(
+                                          idRoom!, playerSize!, widget.user)
+                                      .whenComplete(() => GoRouter.of(context)
+                                          .go('/play', extra: currentPlayer))));
                         }
                       },
                     ),
@@ -132,4 +140,13 @@ class _LobbyPageState extends State<LobbyPage> {
 
     return foundPlayingPlayer;
   }
+
+  @override
+  void initState() {
+    super.initState();
+    idRoom = widget.sharedController.getRoomCode();
+    playerSize = widget.sharedController.getMaxPlayer();
+  }
+
+  
 }

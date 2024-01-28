@@ -60,4 +60,14 @@ class Player extends ChangeNotifier {
 
     return list;
   }
+
+
+  List<String> playCard(PlayableCards played,List<String> choice){
+    PlayableCards? deck=cards?.firstWhere((element) => element==played, orElse: ()=> PlayableCards.nullCard);  
+    cards?.remove(deck);
+    //esegue le validazioni & aggiorna i punti localmente
+  
+
+    return List.empty();
+  }
 }

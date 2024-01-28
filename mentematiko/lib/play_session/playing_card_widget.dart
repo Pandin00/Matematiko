@@ -1,48 +1,24 @@
+import 'package:card/models/playable_cards.dart';
+import 'package:card/models/player.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../audio/audio_controller.dart';
 import '../audio/sounds.dart';
-import '../game_internals/player.dart';
-import '../game_internals/playing_card.dart';
-
-class PlayingCardImage {
-  final String imagePath;
-
-  const PlayingCardImage(this.imagePath);
-}
-
-final List<PlayingCardImage> cardImages = [
-  PlayingCardImage('assets/cards/carteNumerike/CARTA NUMERIKA 002 - REGINA.png'),
-  PlayingCardImage('assets/cards/carteNumerike/CARTA NUMERIKA 002 - REGINA.png'),
-  PlayingCardImage('assets/cards/carteNumerike/CARTA NUMERIKA 002 - REGINA.png'),
-  PlayingCardImage('assets/cards/carteNumerike/CARTA NUMERIKA 002 - REGINA.png'),
-  PlayingCardImage('assets/cards/carteNumerike/CARTA NUMERIKA 002 - REGINA.png'),
-  PlayingCardImage('assets/cards/carteNumerike/CARTA NUMERIKA 002 - REGINA.png'),
-  PlayingCardImage('assets/cards/carteNumerike/CARTA NUMERIKA 002 - REGINA.png'),
-  PlayingCardImage('assets/cards/carteNumerike/CARTA NUMERIKA 002 - REGINA.png'),
-  PlayingCardImage('assets/cards/carteNumerike/CARTA NUMERIKA 002 - REGINA.png'),
-  PlayingCardImage('assets/cards/carteNumerike/CARTA NUMERIKA 002 - REGINA.png'),
-  PlayingCardImage('assets/cards/carteNumerike/CARTA NUMERIKA 002 - REGINA.png'),
-  PlayingCardImage('assets/cards/carteNumerike/CARTA NUMERIKA 002 - REGINA.png'),
-
-  // Add the rest of the card images here...
-];
 
 class PlayingCardWidget extends StatelessWidget {
   static const double width = 61;
   static const double height = 101.9;
 
-  final PlayingCard card;
+  final PlayableCards card;
   final Player? player;
 
   const PlayingCardWidget(this.card, {this.player, super.key});
 
   @override
   Widget build(BuildContext context) {
-    
     final cardWidget = Image.network(
-      cardImages[0].imagePath,
+      card.rendering(),
       width: width,
       height: height,
       fit: BoxFit.cover,
@@ -77,7 +53,7 @@ class PlayingCardWidget extends StatelessWidget {
 
 @immutable
 class PlayingCardDragData {
-  final PlayingCard card;
+  final PlayableCards card;
 
   final Player holder;
 

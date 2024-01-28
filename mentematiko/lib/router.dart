@@ -4,6 +4,7 @@
 
 import 'package:card/main_menu/login.dart';
 import 'package:card/main_menu/register.dart';
+import 'package:card/models/player.dart';
 import 'package:card/models/user.dart';
 import 'package:card/play_session/play_session_screen.dart';
 import 'package:card/services/login_register_service.dart';
@@ -113,7 +114,9 @@ final router = GoRouter(
             path: 'play',
             pageBuilder: (context, state) {
               PlaySessionScreen play = PlaySessionScreen(
-                  key: Key('playSessionScreen'), user: state.extra as User);
+                  key: Key('playSessionScreen'), currentPlayer: state.extra as Player,
+                  matchService: context.read<MatchService>(),
+                  sharedController: context.read<SettingsController>());
               return buildMyTransition<void>(
                 color: context.watch<Palette>().backgroundPlaySession,
                 child: play,

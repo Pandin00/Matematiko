@@ -11,7 +11,9 @@ import 'playing_area_widget.dart';
 /// This widget defines the game UI itself, without things like the settings
 /// button or the back button.
 class BoardWidget extends StatefulWidget {
-  const BoardWidget({super.key});
+  final BoardState boardState;
+
+  const BoardWidget({super.key, required this.boardState});
 
   @override
   State<BoardWidget> createState() => _BoardWidgetState();
@@ -20,18 +22,13 @@ class BoardWidget extends StatefulWidget {
 class _BoardWidgetState extends State<BoardWidget> {
   @override
   Widget build(BuildContext context) {
-    final boardState = context.watch<BoardState>();
-
-    return
-        Padding(
-          padding: const EdgeInsets.all(10),
-          child: Wrap(
-            alignment: WrapAlignment.center,
-            children: [
-              PlayingAreaWidget(boardState.areaOne)
-            ],
-          ),
-        //PlayerHandWidget(),
+    return Padding(
+      padding: const EdgeInsets.all(10),
+      child: Wrap(
+        alignment: WrapAlignment.center,
+        children: [PlayingAreaWidget(widget.boardState)],
+      ),
+      //PlayerHandWidget(),
     );
   }
 }

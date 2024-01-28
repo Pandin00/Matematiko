@@ -1,36 +1,63 @@
-// Copyright 2022, the Flutter project authors. Please see the AUTHORS file
-// for details. All rights reserved. Use of this source code is governed by a
-// BSD-style license that can be found in the LICENSE file.
+import 'dart:async';
 
-import 'package:card/game_internals/dice.dart';
+import 'package:card/models/Room.dart';
+import 'package:card/models/player.dart';
+import 'package:card/services/match_service.dart';
 import 'package:flutter/foundation.dart';
 
-import 'player.dart';
-import 'playing_area.dart';
-
 class BoardState {
-  final VoidCallback onWin;
+  final VoidCallback onWin; //check condizione di vittoria
+  //final VoidCallback timeEnd; //ogni volta che il timer scade + verifica vittoria
+  
+   Room? _currentRoom;
 
-  final PlayingArea areaOne = PlayingArea();
+  final StreamController<Room> tableController =
+      StreamController<Room>.broadcast(); //tavolo
 
-  final Dice areaTwo = Dice();
+  /*final StreamController<List<Player>> players =
+      StreamController<List<Player>>.broadcast(); //giocatori (ne ho bisogno?) */
 
-  final Player player = Player();
+  final MatchService matchService;
+  Player currentPlayer;
 
-  BoardState({required this.onWin}) {
-    player.addListener(_handlePlayerChange);
+  BoardState(
+      {required this.onWin,
+      required this.matchService,
+      required this.currentPlayer}) {
+    currentPlayer.addListener(_handlePlayed);
   }
 
-  List<PlayingArea> get areas => [areaOne];
+  void listeningOnTable(String idRoom) {
+    matchService.getRoomTableInRealTime(idRoom).listen((event) {
+      Map<String, dynamic> data = event.data()!; //suppongo ci sia!
+      // ignore: prefer_conditional_assignment
+      if(_currentRoom==null){
+       _currentRoom=Room.fromFirestore(data);
+      }
+      tableController.add(Room.fromFirestore(data));
+    });
+  }
+
+  void listeningOnCurrentPlayer(String idRoom){
+    matchService.getPlayerInRealTime(idRoom,currentPlayer.id.split('§')[0]).listen((event) {
+        if(event.data()!=null){
+          currentPlayer=Player.fromFirestore(event.data()!);
+        }
+     });
+  }
+
+  //List<PlayingArea> get areas => [areaOne];
 
   void dispose() {
-    player.removeListener(_handlePlayerChange);
-    areaOne.dispose();
+    currentPlayer.removeListener(_handlePlayed);
+    tableController.close();
   }
 
-  void _handlePlayerChange() {
-    if (player.hand.isEmpty) {
-      onWin();
-    }
+  void _handlePlayed() {
+      //passa al turno successivo & aggiorna sul db
+  }
+
+  void changeTurn(String idRoom){
+    matchService.updateNextPlayerByCurrentPlayer(idRoom, _currentRoom!.numberOfPlayers, currentPlayer);
   }
 }

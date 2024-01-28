@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:card/game_internals/player.dart';
+import 'package:card/models/player.dart';
 import 'package:card/models/playable_cards.dart';
 import 'package:card/models/room.dart';
 
