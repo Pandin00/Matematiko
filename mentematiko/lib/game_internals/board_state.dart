@@ -4,8 +4,9 @@ import 'package:card/models/Room.dart';
 import 'package:card/models/player.dart';
 import 'package:card/services/match_service.dart';
 import 'package:flutter/foundation.dart';
+import 'package:logging/logging.dart';
 
-class BoardState {
+class BoardState extends ChangeNotifier {
   final VoidCallback onWin; //check condizione di vittoria
   //final VoidCallback timeEnd; //ogni volta che il timer scade + verifica vittoria
   
@@ -14,6 +15,7 @@ class BoardState {
   final StreamController<Room> tableController =
       StreamController<Room>.broadcast(); //tavolo
 
+   static final _log = Logger('BoardState');    
   /*final StreamController<List<Player>> players =
       StreamController<List<Player>>.broadcast(); //giocatori (ne ho bisogno?) */
 
@@ -42,7 +44,11 @@ class BoardState {
     matchService.getPlayerInRealTime(idRoom,currentPlayer.id.split('§')[0]).listen((event) {
         if(event.data()!=null){
           currentPlayer=Player.fromFirestore(event.data()!);
+          _log.info('Player ${currentPlayer.id.split("§")[0]} aggiornato!');
+          notifyListeners();
+          
         }
+
      });
   }
 

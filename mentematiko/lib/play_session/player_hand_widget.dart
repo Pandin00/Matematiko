@@ -17,7 +17,7 @@ class PlayerHandWidget extends StatelessWidget {
         child: ListenableBuilder(
           // Make sure we rebuild every time there's an update
           // to the player's hand.
-          listenable: boardState.currentPlayer,
+          listenable: boardState,
           builder: (context, child) {
             return Wrap(
               alignment: WrapAlignment.center,

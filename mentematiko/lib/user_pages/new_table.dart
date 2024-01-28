@@ -79,8 +79,13 @@ class _CreateNewTablePageState extends State<CreateNewTablePage> {
                   int players = int.tryParse(playersController.text) ?? 2;
                   RoomCreation r =
                       RoomCreation(players: players, minutes: _selectedMinutes);
+                  context
+                      .read<SettingsController>()
+                      .setTimePerTurn(_selectedMinutes);
+
+                      
                   widget.matchService
-                      .createRooom(r, widget.user)
+                      .createRoom(r, widget.user)
                       .then((value) => {
                             if (value.isNotEmpty)
                               {

@@ -15,4 +15,8 @@ abstract class SettingsPersistence {
 
   int getMaxPlayer();
   void setMaxPlayer(int max);
+
+
+  void setTimePerTurn(int time);
+  int getTimePerTurn();
 }

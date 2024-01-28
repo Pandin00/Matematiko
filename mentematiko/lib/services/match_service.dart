@@ -43,7 +43,7 @@ class MatchService {
     '0'
   ];
 
-  Future<List<String>> createRooom(RoomCreation room, User u) async {
+  Future<List<String>> createRoom(RoomCreation room, User u) async {
     //create documents
     var main = firestore.collection('rooms').doc();
 
@@ -110,7 +110,7 @@ class MatchService {
             .doc(user.email)
             .set(p.toFirestore());
         return JoinedItem(querySnapshot.docs.first.id.toString(),
-            currentRoom.numberOfPlayers);
+            currentRoom.numberOfPlayers,currentRoom.time);
       } else {
         return JoinedItem.fromError("FULL");
       }
@@ -343,10 +343,11 @@ class MatchService {
 //classi di comodo
 class JoinedItem {
   String? roomId;
+  int? time;
   int? maxPlayers;
   String? errorCode;
 
-  JoinedItem(this.roomId, this.maxPlayers) {
+  JoinedItem(this.roomId, this.maxPlayers,this.time) {
     errorCode = '';
   }
 

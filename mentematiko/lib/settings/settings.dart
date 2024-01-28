@@ -58,4 +58,12 @@ class SettingsController {
   void setMaxPlayer(int max){
     return _store.setMaxPlayer(max);
   }
+
+  void setTimePerTurn(int time){
+    return _store.setTimePerTurn(time);
+  }
+
+  int getTimePerTurn(){
+    return _store.getTimePerTurn();
+  }
 }

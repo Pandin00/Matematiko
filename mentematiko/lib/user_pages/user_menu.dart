@@ -64,6 +64,7 @@ class ArbUserMenu extends StatelessWidget {
                       if (value.errorCode != 'NOT_FOUND' && value.errorCode!='FULL'){
                         context.read<SettingsController>().setRoomCode(value.roomId?? ''),
                         context.read<SettingsController>().setMaxPlayer(value.maxPlayers?? -1),
+                        context.read<SettingsController>().setTimePerTurn(value.time?? 1),
                         GoRouter.of(context).go('/lobby', extra: user)
                       }
                       else{
@@ -120,6 +121,7 @@ class NormalUserMenu extends StatelessWidget {
                       if (value.errorCode != 'NOT_FOUND' && value.errorCode!='FULL'){
                         context.read<SettingsController>().setRoomCode(value.roomId?? ''),
                         context.read<SettingsController>().setMaxPlayer(value.maxPlayers?? -1),
+                        context.read<SettingsController>().setTimePerTurn(value.time?? 1),
                         GoRouter.of(context).go('/lobby', extra: user)
                       }
                       else{

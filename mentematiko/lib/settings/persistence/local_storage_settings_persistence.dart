@@ -39,6 +39,18 @@ class LocalStorageSettingsPersistence extends SettingsPersistence {
     final prefs = instance;
     await prefs?.setInt('maxPlayers', max);
   }
+  
+  @override
+  int getTimePerTurn() {
+     final prefs = instance;
+    return prefs?.getInt('time') ?? -1;
+  }
+  
+  @override
+  void setTimePerTurn(int time) async {
+   final prefs = instance;
+    await prefs?.setInt('time', time);
+  }
 
 
 }

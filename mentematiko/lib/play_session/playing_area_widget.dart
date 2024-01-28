@@ -266,9 +266,9 @@ class _PlayingAreaWidgetState extends State<PlayingAreaWidget> {
             }),
             ElevatedButton(
               onPressed: () {
-                //aggiorna localmente e ritorna le azioni
+                //aggiorna localmente e ritorna le azioni/errori
                 List<String> effects=data.holder.playCard(data.card, selections);
-                
+
                 //chiama board_start per eseguire gli effetti e le operazioni su db
 
 
@@ -304,7 +304,7 @@ class _PlayingAreaWidgetState extends State<PlayingAreaWidget> {
       context: context,
       builder: (BuildContext context) {
         return SimpleDialog(
-          title: Text('Select a Figure'),
+          title: Text('Carte'),
           children: [
             // display the cards in each row
             for (int i = 0; i < numRows; i++)

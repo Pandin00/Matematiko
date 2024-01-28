@@ -25,12 +25,12 @@ import 'board_widget.dart';
 /// It is a stateful widget because it manages some state of its own,
 /// such as whether the game is in a "celebration" state.
 class PlaySessionScreen extends StatefulWidget {
-  final Player currentPlayer;
+  Player? currentPlayer;
   final SettingsController sharedController;
   final MatchService matchService;
-  const PlaySessionScreen(
+  PlaySessionScreen(
       {super.key,
-      required this.currentPlayer,
+      this.currentPlayer,
       required this.sharedController,
       required this.matchService});
 
@@ -42,6 +42,7 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
   static final _log = Logger('PlaySessionScreen');
   int numberOfPlayers = 2;
   String? idRoom;
+  late int time;
 
   static const _celebrationDuration = Duration(milliseconds: 2000);
 
@@ -52,7 +53,7 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
   late DateTime _startOfPlay;
 
   late final BoardState _boardState;
-  bool _timerExpired = false;
+  late bool _timerExpired;
 
   List<int> orders = List.empty(growable: true);
 
@@ -74,14 +75,15 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        CountdownTimer(
-                          duration: 60,
-                          onTimerExpired: (expired) {
-                            setState(() {
-                              _timerExpired = expired;
-                            });
-                          },
-                        ),
+                        ListenableBuilder(
+                            listenable: _boardState,
+                            builder: (context, child) {
+                              return CountdownTimer(
+                                currentPlayer: _boardState.currentPlayer,
+                                duration: time,
+                                onTimerExpired: timerExpired,
+                              );
+                            }),
                       ],
                     ),
                     Expanded(
@@ -89,7 +91,10 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                         crossAxisCount: numberOfPlayers - 3,
                         children: [
                           for (int i = 0; i < numberOfPlayers - 3; i++)
-                            OpponentWidget(matchService: widget.matchService,idRoom: idRoom!, order: orders[i]),
+                            OpponentWidget(
+                                matchService: widget.matchService,
+                                idRoom: idRoom!,
+                                order: orders[i]),
                         ],
                       ),
                     ),
@@ -97,9 +102,15 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                       child: GridView.count(
                         crossAxisCount: 3,
                         children: [
-                          OpponentWidget(matchService: widget.matchService,idRoom: idRoom!, order: orders[numberOfPlayers-3]),
+                          OpponentWidget(
+                              matchService: widget.matchService,
+                              idRoom: idRoom!,
+                              order: orders[numberOfPlayers - 3]),
                           BoardWidget(boardState: _boardState),
-                           OpponentWidget(matchService: widget.matchService,idRoom: idRoom!, order: orders[numberOfPlayers-2]),
+                          OpponentWidget(
+                              matchService: widget.matchService,
+                              idRoom: idRoom!,
+                              order: orders[numberOfPlayers - 2]),
                         ],
                       ),
                     ),
@@ -134,22 +145,25 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        CountdownTimer(
-                          duration: 60,
-                          onTimerExpired: (expired) {
-                            // aggiorna turni
-                            setState(() {
-                              _timerExpired = expired;
-                            });
-                          },
-                        ),
+                        ListenableBuilder(
+                            listenable: _boardState,
+                            builder: (context, child) {
+                              return CountdownTimer(
+                                currentPlayer: _boardState.currentPlayer,
+                                duration: time,
+                                onTimerExpired: timerExpired,
+                              );
+                            }),
                       ],
                     ),
                     Expanded(
                       child: GridView.count(
                         crossAxisCount: 1,
                         children: [
-                          OpponentWidget(matchService: widget.matchService,idRoom: idRoom!, order: orders[0]),
+                          OpponentWidget(
+                              matchService: widget.matchService,
+                              idRoom: idRoom!,
+                              order: orders[0]),
                         ],
                       ),
                     ),
@@ -186,22 +200,29 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        CountdownTimer(
-                          duration: 60,
-                          onTimerExpired: (expired) {
-                            setState(() {
-                              _timerExpired = expired;
-                            });
-                          },
-                        ),
+                        ListenableBuilder(
+                            listenable: _boardState,
+                            builder: (context, child) {
+                              return CountdownTimer(
+                                currentPlayer: _boardState.currentPlayer,
+                                duration: time,
+                                onTimerExpired: timerExpired,
+                              );
+                            }),
                       ],
                     ),
                     Expanded(
                       child: GridView.count(
                         crossAxisCount: 2,
                         children: [
-                          OpponentWidget(matchService: widget.matchService,idRoom: idRoom!, order: orders[0]),
-                          OpponentWidget(matchService: widget.matchService,idRoom: idRoom!, order: orders[1]),
+                          OpponentWidget(
+                              matchService: widget.matchService,
+                              idRoom: idRoom!,
+                              order: orders[0]),
+                          OpponentWidget(
+                              matchService: widget.matchService,
+                              idRoom: idRoom!,
+                              order: orders[1]),
                         ],
                       ),
                     ),
@@ -239,23 +260,33 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        CountdownTimer(
-                          duration: 60,
-                          onTimerExpired: (expired) {
-                            setState(() {
-                              _timerExpired = expired;
-                            });
-                          },
-                        ),
+                        ListenableBuilder(
+                            listenable: _boardState,
+                            builder: (context, child) {
+                              return CountdownTimer(
+                                currentPlayer: _boardState.currentPlayer,
+                                duration: time,
+                                onTimerExpired: timerExpired,
+                              );
+                            }),
                       ],
                     ),
                     Expanded(
                       child: GridView.count(
                         crossAxisCount: 3,
                         children: [
-                          OpponentWidget(matchService: widget.matchService,idRoom: idRoom!, order: orders[0]),
-                          OpponentWidget(matchService: widget.matchService,idRoom: idRoom!, order: orders[1]),
-                          OpponentWidget(matchService: widget.matchService,idRoom: idRoom!, order: orders[2]),
+                          OpponentWidget(
+                              matchService: widget.matchService,
+                              idRoom: idRoom!,
+                              order: orders[0]),
+                          OpponentWidget(
+                              matchService: widget.matchService,
+                              idRoom: idRoom!,
+                              order: orders[1]),
+                          OpponentWidget(
+                              matchService: widget.matchService,
+                              idRoom: idRoom!,
+                              order: orders[2]),
                         ],
                       ),
                     ),
@@ -292,20 +323,33 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
   void initState() {
     super.initState();
     numberOfPlayers = widget.sharedController.getMaxPlayer();
+    idRoom = widget.sharedController.getRoomCode();
+    time = widget.sharedController.getTimePerTurn();
     //calculate orders for opponent
     for (int i = 0; i < numberOfPlayers; ++i) {
       orders.add(i + 1);
     }
-    orders.remove(widget.currentPlayer.order);
+    orders.remove(widget.currentPlayer?.order);
 
-    idRoom = widget.sharedController.getRoomCode();
     _startOfPlay = DateTime.now();
     _boardState = BoardState(
         onWin: _playerWon,
         matchService: widget.matchService,
-        currentPlayer: widget.currentPlayer);
+        currentPlayer: widget.currentPlayer!);
     _boardState.listeningOnTable(idRoom!);
     _boardState.listeningOnCurrentPlayer(idRoom!);
+    _timerExpired=!_boardState.currentPlayer.playing;
+  }
+
+  void timerExpired(bool value) {
+    if (value != _timerExpired) {
+      setState(() {
+        _timerExpired = value; //se true disattiva
+      });
+      if (value) {
+        _boardState.changeTurn(idRoom!);
+      }
+    }
   }
 
   Future<void> _playerWon() async {
@@ -351,12 +395,13 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
 class CountdownTimer extends StatefulWidget {
   final int duration;
   final ValueChanged<bool> onTimerExpired;
+  final Player currentPlayer;
 
-  const CountdownTimer({
-    super.key,
-    required this.duration,
-    required this.onTimerExpired,
-  });
+  const CountdownTimer(
+      {super.key,
+      required this.duration,
+      required this.onTimerExpired,
+      required this.currentPlayer});
 
   @override
   _CountdownTimerState createState() => _CountdownTimerState();
@@ -370,7 +415,7 @@ class _CountdownTimerState extends State<CountdownTimer> {
   @override
   void initState() {
     super.initState();
-    _remainingTime = widget.duration;
+    _remainingTime = widget.duration * 60;
     _startTimer();
   }
 
@@ -381,20 +426,24 @@ class _CountdownTimerState extends State<CountdownTimer> {
   }
 
   void restartTimer() {
-    _timer?.cancel(); // Cancella il timer esistente
-    _remainingTime = widget.duration; // Reimposta il tempo rimanente
-    _startTimer(); // Avvia il nuovo timer
+    //_timer?.cancel(); // Cancella il timer esistente
+    _timerExpired = false;
+    _remainingTime = widget.duration * 60; // Reimposta il tempo rimanente
+    //_startTimer(); // Avvia il nuovo timer
   }
 
   void _startTimer() {
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
       setState(() {
-        if (_remainingTime > 0) {
-          _remainingTime--;
-        } else {
-          _timer?.cancel();
-          _timerExpired = true;
+        if (widget.currentPlayer.playing) {
           widget.onTimerExpired(_timerExpired);
+          if (_remainingTime > 0) {
+            _remainingTime -= 3;
+          } else {
+            _timerExpired = true;
+            widget.onTimerExpired(_timerExpired);
+            restartTimer();
+          }
         }
       });
     });
@@ -402,18 +451,32 @@ class _CountdownTimerState extends State<CountdownTimer> {
 
   @override
   Widget build(BuildContext context) {
-    String timeString = _remainingTime.toString().padLeft(2, '0');
+    String timeString = '${_remainingTime.toString().padLeft(2, '0')} secondi';
     return Column(
       children: [
-        Text(
-          ' Tempo turno: $timeString',
-          style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-        ),
-        if (_timerExpired)
-          const Text(
-            'Il tempo è scaduto',
+        if (widget.currentPlayer.playing)
+          if (!_timerExpired)
+            Text(
+              'Tempo turno: $timeString',
+              style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+            )
+          else
+            Text(
+              'Il tempo è scaduto',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.red,
+              ),
+            )
+        else
+          Text(
+            'Non è il tuo turno',
             style: TextStyle(
-                fontSize: 24, fontWeight: FontWeight.bold, color: Colors.red),
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.red,
+            ),
           ),
       ],
     );

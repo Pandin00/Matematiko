@@ -1,3 +1,4 @@
+import 'package:card/models/playable_cards.dart';
 import 'package:card/models/player.dart';
 import 'package:card/services/match_service.dart';
 import 'package:flutter/material.dart';
@@ -28,7 +29,8 @@ class _OpponentWidgetState extends State<OpponentWidget> {
   }
 
   Future<void> _loadPlayerData() async {
-    final value = await widget.matchService.searchByOrder(widget.idRoom, widget.order);
+    final value =
+        await widget.matchService.searchByOrder(widget.idRoom, widget.order);
     setState(() {
       player = value!;
     });
@@ -47,12 +49,43 @@ class _OpponentWidgetState extends State<OpponentWidget> {
         Text('Opponent Name: ${player.id.split("§")[1]}'),
         ElevatedButton(
           onPressed: () {
-            //print('Show cards');
+            _loadPlayerData().whenComplete(() => showCard(context, player.cards!));
           },
           child: Text('Show cards'),
         ),
       ],
     );
   }
-}
 
+  void showCard(BuildContext context, List<PlayableCards> cards) {
+    int numRows = 3;
+    int numCardsPerRow = (cards.length / numRows).ceil();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return SimpleDialog(
+          title: Text('Carte'),
+          children: [
+            // display the cards in each row
+            for (int i = 0; i < numRows; i++)
+              Wrap(
+                children: [
+                  for (int j = 0; j < numCardsPerRow; j++)
+                    if (i * numCardsPerRow + j < cards.length)
+                      Container(
+                        child: Image.network(
+                          cards[i * numCardsPerRow + j].rendering(),
+                          height: 110,
+                          width: 100,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                ],
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
