@@ -8,7 +8,6 @@ class Player extends ChangeNotifier {
   int point = 0;
   int order = 0; //ordine di gioco -> 0 arbitro
   bool playing = false;
-
   //lista di oggetto cards (?)
   List<PlayableCards>? cards; //mazzo di carte in mano al giocatore
 

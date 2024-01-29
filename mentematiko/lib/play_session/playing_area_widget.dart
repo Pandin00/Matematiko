@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:card/game_internals/board_state.dart';
 import 'package:card/models/Room.dart';
 import 'package:card/models/playable_cards.dart';
+import 'package:card/services/rules_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -96,169 +97,169 @@ class _PlayingAreaWidgetState extends State<PlayingAreaWidget> {
               return Column(children: [
                 CheckboxListTile(
                   tristate: false,
-                  value: (selections.contains('Divisore')),
+                  value: (selections.contains(Rules.DIVISIBILE)),
                   title: Text('Divisore'),
                   onChanged: (value) {
                     setState(() {
                       flagWarranty = value;
                       if (value != null) {
-                        selections.add('Divisore');
+                        selections.add(Rules.DIVISIBILE);
                       }
                     });
                   },
                 ),
                 CheckboxListTile(
                   tristate: false,
-                  value: (selections.contains('Multiplo')),
+                  value: (selections.contains(Rules.MULTIPLO)),
                   title: Text('Multiplo'),
                   onChanged: (value) {
                     setState(() {
                       flagWarranty = value;
                       if (value != null) {
-                        selections.add('Multiplo');
+                        selections.add(Rules.MULTIPLO);
                       }
                     });
                   },
                 ),
                 CheckboxListTile(
                   tristate: false,
-                  value: (selections.contains('Speculare')),
+                  value: (selections.contains(Rules.SPECULARE)),
                   title: Text('Speculare'),
                   onChanged: (value) {
                     setState(() {
                       flagWarranty = value;
                       if (value != null) {
-                        selections.add('Speculare');
+                        selections.add(Rules.SPECULARE);
                       }
                     });
                   },
                 ),
                 CheckboxListTile(
                   tristate: false,
-                  value: (selections.contains('Numero primo')),
+                  value: (selections.contains(Rules.PRIMO)),
                   title: Text('Numero primo'),
                   onChanged: (value) {
                     setState(() {
                       flagWarranty = value;
                       if (value != null) {
-                        selections.add('Numero primo');
+                        selections.add(Rules.PRIMO);
                       }
                     });
                   },
                 ),
                 CheckboxListTile(
                   tristate: false,
-                  value: (selections.contains('0')),
+                  value: (selections.contains(Rules.ZERO)),
                   title: Text('0'),
                   onChanged: (value) {
                     setState(() {
                       flagWarranty = value;
                       if (value != null) {
-                        selections.add('0');
+                        selections.add(Rules.ZERO);
                       }
                     });
                   },
                 ),
                 CheckboxListTile(
                   tristate: false,
-                  value: (selections.contains('EC != 0')),
+                  value: (selections.contains(Rules.EULER_DIVERSO)),
                   title: Text('EC != 0'),
                   onChanged: (value) {
                     setState(() {
                       flagWarranty = value;
                       if (value != null) {
-                        selections.add('EC != 0');
+                        selections.add(Rules.EULER_DIVERSO);
                       }
                     });
                   },
                 ),
                 CheckboxListTile(
                   tristate: false,
-                  value: (selections.contains('Quadrato')),
+                  value: (selections.contains(Rules.QUADRATO)),
                   title: Text('Quadrato'),
                   onChanged: (value) {
                     setState(() {
                       flagWarranty = value;
                       if (value != null) {
-                        selections.add('Quadrato');
+                        selections.add(Rules.QUADRATO);
                       }
                     });
                   },
                 ),
                 CheckboxListTile(
                   tristate: false,
-                  value: (selections.contains('Perfetto')),
+                  value: (selections.contains(Rules.PERFETTO)),
                   title: Text('Perfetto'),
                   onChanged: (value) {
                     setState(() {
                       flagWarranty = value;
                       if (value != null) {
-                        selections.add('Perfetto');
+                        selections.add(Rules.PERFETTO);
                       }
                     });
                   },
                 ),
                 CheckboxListTile(
                   tristate: false,
-                  value: (selections.contains('Complementare')),
+                  value: (selections.contains(Rules.COMPLEMENTARE)),
                   title: Text('Complementare'),
                   onChanged: (value) {
                     setState(() {
                       flagWarranty = value;
                       if (value != null) {
-                        selections.add('Complementare');
+                        selections.add(Rules.COMPLEMENTARE);
                       }
                     });
                   },
                 ),
                 CheckboxListTile(
                   tristate: false,
-                  value: (selections.contains('Cubo')),
+                  value: (selections.contains(Rules.CUBO)),
                   title: Text('Cubo'),
                   onChanged: (value) {
                     setState(() {
                       flagWarranty = value;
                       if (value != null) {
-                        selections.add('Cubo');
+                        selections.add(Rules.CUBO);
                       }
                     });
                   },
                 ),
                 CheckboxListTile(
                   tristate: false,
-                  value: (selections.contains('m.c.m.')),
+                  value: (selections.contains(Rules.MCM)),
                   title: Text('m.c.m.'),
                   onChanged: (value) {
                     setState(() {
                       flagWarranty = value;
                       if (value != null) {
-                        selections.add('m.c.m.');
+                        selections.add(Rules.MCM);
                       }
                     });
                   },
                 ),
                 CheckboxListTile(
                   tristate: false,
-                  value: (selections.contains('M.C.D.')),
+                  value: (selections.contains(Rules.MCD)),
                   title: Text('M.C.D.'),
                   onChanged: (value) {
                     setState(() {
                       flagWarranty = value;
                       if (value != null) {
-                        selections.add('M.C.D.');
+                        selections.add(Rules.MCD);
                       }
                     });
                   },
                 ),
                 CheckboxListTile(
                   tristate: false,
-                  value: (selections.contains('Liscia')),
+                  value: (selections.contains(Rules.LISCIA)),
                   title: Text('Liscia'),
                   onChanged: (value) {
                     setState(() {
                       flagWarranty = value;
                       if (value != null) {
-                        selections.add('Liscia');
+                        selections.add(Rules.LISCIA);
                       }
                     });
                   },
