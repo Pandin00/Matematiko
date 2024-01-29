@@ -1,5 +1,6 @@
 import 'package:card/models/playable_cards.dart';
 import 'package:card/models/player.dart';
+import 'package:card/models/Room.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -12,8 +13,9 @@ class PlayingCardWidget extends StatelessWidget {
 
   final PlayableCards card;
   final Player? player;
+  final Room? room;
 
-  const PlayingCardWidget(this.card, {this.player, super.key});
+  const PlayingCardWidget(this.card, {this.player,this.room, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +33,7 @@ class PlayingCardWidget extends StatelessWidget {
         angle: 0.1,
         child: cardWidget,
       ),
-      data: PlayingCardDragData(card, player!),
+      data: PlayingCardDragData(card, player!,room!),
       childWhenDragging: Opacity(
         opacity: 0.5,
         child: cardWidget,
@@ -57,5 +59,7 @@ class PlayingCardDragData {
 
   final Player holder;
 
-  const PlayingCardDragData(this.card, this.holder);
+  final Room room;
+
+  const PlayingCardDragData(this.card, this.holder,this.room);
 }

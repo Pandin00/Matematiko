@@ -1,4 +1,6 @@
 import 'package:card/models/playable_cards.dart';
+import 'package:card/models/Room.dart';
+import 'package:card/services/rules_service.dart';
 import 'package:flutter/foundation.dart';
 
 class Player extends ChangeNotifier {
@@ -62,9 +64,12 @@ class Player extends ChangeNotifier {
   }
 
 
-  List<String> playCard(PlayableCards played,List<String> choice){
+  List<String> playCard(PlayableCards played,List<String> choice,Room room){
     PlayableCards? deck=cards?.firstWhere((element) => element==played, orElse: ()=> PlayableCards.nullCard);  
     cards?.remove(deck);
+    Rules rules=Rules(currentPlayer: this,azioniAllaFineDelPopup: choice,tavolo: room,playedCard: played);
+    rules.eseguiRegoleDelGioco();
+
     //esegue le validazioni & aggiorna i punti localmente
   
 

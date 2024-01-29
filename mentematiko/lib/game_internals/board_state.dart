@@ -29,6 +29,10 @@ class BoardState extends ChangeNotifier {
     currentPlayer.addListener(_handlePlayed);
   }
 
+  Room getCurrentRoom() {
+    return _currentRoom!; // da rivedere
+  }
+
   void listeningOnTable(String idRoom) {
     matchService.getRoomTableInRealTime(idRoom).listen((event) {
       Map<String, dynamic> data = event.data()!; //suppongo ci sia!

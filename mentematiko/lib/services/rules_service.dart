@@ -3,13 +3,13 @@ import 'dart:math';
 import 'package:card/models/player.dart';
 import 'package:card/models/playable_cards.dart';
 import 'package:card/models/player_actions.dart';
-import 'package:card/models/room.dart';
+import 'package:card/models/Room.dart';
 
 class Rules {
   Player currentPlayer;
   List<String> azioniAllaFineDelPopup;
   Room tavolo;
-  List<Player> altriGiocatori;
+  //List<Player> altriGiocatori;
   PlayableCards playedCard;
 
   // Costruttore
@@ -17,12 +17,15 @@ class Rules {
     required this.currentPlayer,
     required this.azioniAllaFineDelPopup,
     required this.tavolo,
-    required this.altriGiocatori,
+   // required this.altriGiocatori,
     required this.playedCard
   });
 
   // Metodo per eseguire le regole del gioco
   PlayerActions eseguiRegoleDelGioco() {
+
+   
+
     List<String> listaCorretti = [];
     List<String> listaErrori = [];
     List<String> allActions = ['divisore', 'multiplo', 'speculare', 'primo', 'zero', 'eulerDiverso', 'quadrato', 'perfetto', 'complementare', 'cubo', 'mcm', 'mcd', 'liscia'];

@@ -56,7 +56,7 @@ class _PlayingAreaWidgetState extends State<PlayingAreaWidget> {
                       tableCards = snapshot.data?.piatto
                           ?.map((e) => PlayableCards.buildFromValue(e))
                           .toList();
-                      return _CardStack(snapshot.data?.piatto);
+                      return _CardStack(snapshot.data?.piatto,widget._boardState.getCurrentRoom());
                     } else {
                       // Return a placeholder or loading indicator if needed
                       return CircularProgressIndicator();
@@ -269,7 +269,7 @@ class _PlayingAreaWidgetState extends State<PlayingAreaWidget> {
               onPressed: () {
                 //aggiorna localmente e ritorna le azioni/errori
                 List<String> effects =
-                    data.holder.playCard(data.card, selections);
+                    data.holder.playCard(data.card, selections,data.room);
 
                 //chiama board_start per eseguire gli effetti e le operazioni su db
 
@@ -342,7 +342,9 @@ class _CardStack extends StatelessWidget {
 
   List<PlayableCards>? cards;
 
-  _CardStack(List<String>? plateCards) {
+  Room? currentRoom;
+
+  _CardStack(List<String>? plateCards, Room? room) {
     cards = plateCards != null
         ? plateCards
             .map((e) => PlayableCards.buildFromValue(e))
@@ -350,6 +352,7 @@ class _CardStack extends StatelessWidget {
             .reversed
             .toList()
         : List.empty();
+    currentRoom=room;
   }
 
   @override
@@ -366,7 +369,7 @@ class _CardStack extends StatelessWidget {
               Positioned(
                 top: i * _topOffset,
                 left: i * _leftOffset,
-                child: PlayingCardWidget(cards![i]),
+                child: PlayingCardWidget(cards![i],room: currentRoom,),
               ),
           ],
         ),

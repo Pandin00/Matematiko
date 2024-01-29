@@ -25,7 +25,8 @@ class PlayerHandWidget extends StatelessWidget {
               runSpacing: 10,
               children: [
                 ...boardState.currentPlayer.cards!.map((card) =>
-                    PlayingCardWidget(card, player: boardState.currentPlayer)),
+                    PlayingCardWidget(card, player: boardState.currentPlayer, 
+                    room: boardState.getCurrentRoom())),
               ],
             );
           },
