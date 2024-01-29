@@ -16,8 +16,8 @@ class PlayingAreaWidget extends StatefulWidget {
   late StreamController<Room> table;
   final BoardState _boardState;
 
-  PlayingAreaWidget(this._boardState, {super.key}){
-     table=_boardState.tableController;
+  PlayingAreaWidget(this._boardState, {super.key}) {
+    table = _boardState.tableController;
   }
 
   @override
@@ -30,7 +30,7 @@ class _PlayingAreaWidgetState extends State<PlayingAreaWidget> {
   @override
   Widget build(BuildContext context) {
     final palette = context.watch<Palette>();
-    
+
     return LimitedBox(
       maxHeight: 200,
       child: AspectRatio(
@@ -53,7 +53,9 @@ class _PlayingAreaWidgetState extends State<PlayingAreaWidget> {
                     if (snapshot.connectionState == ConnectionState.active &&
                         !snapshot.hasError &&
                         snapshot.hasData) {
-                          tableCards=snapshot.data?.piatto?.map((e) => PlayableCards.buildFromValue(e)).toList();
+                      tableCards = snapshot.data?.piatto
+                          ?.map((e) => PlayableCards.buildFromValue(e))
+                          .toList();
                       return _CardStack(snapshot.data?.piatto);
                     } else {
                       // Return a placeholder or loading indicator if needed
@@ -73,8 +75,7 @@ class _PlayingAreaWidgetState extends State<PlayingAreaWidget> {
   }
 
   void _onAreaTap() {
-    
-    showPlateCard(context,tableCards!);
+    showPlateCard(context, tableCards!);
     final audioController = context.read<AudioController>();
     //TODO cambiare con un suono migliore
     audioController.playSfx(SfxType.huhsh);
@@ -267,10 +268,10 @@ class _PlayingAreaWidgetState extends State<PlayingAreaWidget> {
             ElevatedButton(
               onPressed: () {
                 //aggiorna localmente e ritorna le azioni/errori
-                List<String> effects=data.holder.playCard(data.card, selections);
+                List<String> effects =
+                    data.holder.playCard(data.card, selections);
 
                 //chiama board_start per eseguire gli effetti e le operazioni su db
-
 
                 Navigator.pop(context);
               },
@@ -292,11 +293,9 @@ class _PlayingAreaWidgetState extends State<PlayingAreaWidget> {
     setState(() => isHighlighted = true);
     return true;
   }
-   
 
   ///show played cards
-  void showPlateCard(BuildContext context,List<PlayableCards> cards){
-
+  void showPlateCard(BuildContext context, List<PlayableCards> cards) {
     int numRows = 2;
     int numCardsPerRow = (cards.length / numRows).ceil();
 
@@ -326,7 +325,7 @@ class _PlayingAreaWidgetState extends State<PlayingAreaWidget> {
         );
       },
     );
-  } 
+  }
 }
 
 class _CardStack extends StatelessWidget {
@@ -344,7 +343,13 @@ class _CardStack extends StatelessWidget {
   List<PlayableCards>? cards;
 
   _CardStack(List<String>? plateCards) {
-    cards = plateCards != null ? plateCards.map((e) => PlayableCards.buildFromValue(e)).toList().reversed.toList() : null;
+    cards = plateCards != null
+        ? plateCards
+            .map((e) => PlayableCards.buildFromValue(e))
+            .toList()
+            .reversed
+            .toList()
+        : List.empty();
   }
 
   @override
