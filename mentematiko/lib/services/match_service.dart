@@ -343,7 +343,7 @@ class MatchService {
     var rooms = firestore.collection('rooms');
     var players = firestore.collection('rooms').doc(idRoom).collection('players');
 
-   // get room document
+    // get room document
     var roomDoc = await rooms.doc(idRoom).get();
     var piatto = roomDoc['piatto'];
         
@@ -361,14 +361,66 @@ class MatchService {
 
       await players.doc(idPlayer).update({'cards': updatedPlayerCards});
 
-
     } else {
       // give all remaining cards to the player
       await players.doc(idPlayer).update({'cards': FieldValue.arrayUnion(piatto)});
       await rooms.doc(idRoom).update({'piatto': []});
     }
   }
-  //implementa regole 1, 6, 8, 11, 12
+
+  effettoDivisore(String lastCardValue, String playedCardValue, String idPlayer, String idRoom){
+    int lastCard = int.parse(lastCardValue);
+    int playedCard = int.parse(playedCardValue);
+    assignCardsFromPlate((lastCard/playedCard) as int,  idPlayer, idRoom);
+  }
+
+  //uguale per 6 e 11
+  effettoZeroMcm(String lastCardValue, String playedCardValue, String idPlayer, String idRoom) async {
+    var rooms = firestore.collection('rooms');
+    var roomDoc = await rooms.doc(idRoom).get();
+    var piatto = roomDoc['piatto'];
+    assignCardsFromPlate(piatto.length, idPlayer, idRoom);
+  }
+
+  effettoNumeroPerfetto(String playedCardValue, String idPlayer, String idRoom) async {
+    var rooms = firestore.collection('rooms');
+    var roomDoc = await rooms.doc(idRoom).get();
+    var piatto = roomDoc['piatto'];
+    var players = firestore.collection('rooms').doc(idRoom).collection('players');
+    var playerDoc = await players.doc(idPlayer).get();
+
+    // Converti playedCardValue in un intero
+    int playedCardValueInt = int.parse(playedCardValue);
+
+    List<String> updatedPlayerCards = playerDoc['cards'];
+
+    // Iteriamo su ogni elemento di piatto
+    for (var divisore in piatto) {
+      // Converti divisore in un intero
+      int divisoreInt = int.parse(divisore);
+
+      // Verifica se divisore è un divisore di playedCardValue
+      if (playedCardValueInt % divisoreInt == 0) {
+        // divisore è un divisore di playedCardValue
+        updatedPlayerCards.add(divisoreInt as String);
+      }
+    }
+    await players.doc(idPlayer).update({'cards': updatedPlayerCards});
+  }
+
+  effettoMcd(String playedCardValue, String idPlayer, String idRoom) async {
+    var rooms = firestore.collection('rooms');
+    var roomDoc = await rooms.doc(idRoom).get();
+    var euleroCard = roomDoc['eulero_card'];
+    var players = firestore.collection('rooms').doc(idRoom).collection('players');
+    var playerDoc = await players.doc(idPlayer).get();
+
+    List<String> updatedPlayerCards = playerDoc['cards'];
+    updatedPlayerCards.add(euleroCard.first);
+
+    await players.doc(idPlayer).update({'cards': updatedPlayerCards});
+  }
+  //implementa calcolo punti
 }
 
 //classi di comodo
