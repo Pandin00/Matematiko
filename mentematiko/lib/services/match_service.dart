@@ -338,6 +338,37 @@ class MatchService {
 
     return code;
   }
+
+  Future<void> assignCardsFromPlate(int n, String idPlayer, String idRoom) async {
+    var rooms = firestore.collection('rooms');
+    var players = firestore.collection('rooms').doc(idRoom).collection('players');
+
+   // get room document
+    var roomDoc = await rooms.doc(idRoom).get();
+    var piatto = roomDoc['piatto'];
+        
+    // check if there are enough cards in the piatto
+    if (piatto.length >= n) {
+      // remove n cards from the piatto
+      List<dynamic> updatedPiattoCards = piatto.sublist(n);
+      await rooms.doc(idRoom).update({'piatto': updatedPiattoCards});
+
+      // add n cards to the player's hand
+      var playerDoc = await players.doc(idPlayer).get();
+
+      List<dynamic> updatedPlayerCards = playerDoc['cards']!..addAll(
+        piatto.sublist(0, n).map((e) => e.toString()).toList());
+
+      await players.doc(idPlayer).update({'cards': updatedPlayerCards});
+
+
+    } else {
+      // give all remaining cards to the player
+      await players.doc(idPlayer).update({'cards': FieldValue.arrayUnion(piatto)});
+      await rooms.doc(idRoom).update({'piatto': []});
+    }
+  }
+  //implementa regole 1, 6, 8, 11, 12
 }
 
 //classi di comodo

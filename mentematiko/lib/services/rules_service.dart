@@ -38,12 +38,22 @@ class Rules {
   // Metodo per eseguire le regole del gioco
   PlayerActions eseguiRegoleDelGioco() {
 
-   
-
     List<String> listaCorretti = [];
     List<String> listaErrori = [];
     List<String> allActions = [DIVISIBILE, MULTIPLO, SPECULARE, PRIMO, ZERO, EULER_DIVERSO, QUADRATO, PERFETTO, COMPLEMENTARE, CUBO, MCM, MCD, LISCIA];
 
+    //caso in cui last card è 0
+    if(tavolo.piatto.first == '0'){
+      for (var action in azioniAllaFineDelPopup){
+        if( action == DIVISIBILE ){
+          listaCorretti.add(DIVISIBILE);
+        } else {
+          listaErrori.add(action);
+        }
+      }
+      return PlayerActions(listaCorretti: [...listaCorretti], listaErrori: [...listaErrori]);
+    }
+    
     for (var element in allActions) {
       switch (element){
         case DIVISIBILE:
@@ -57,110 +67,122 @@ class Rules {
           }
           break;
         case MULTIPLO:
-          if(isMultiple(tavolo.piatto.first, playedCard.value) && azioniAllaFineDelPopup.contains(MULTIPLO)){
+          bool isMul = isMultiple(tavolo.piatto.first, playedCard.value);
+          if(isMul && azioniAllaFineDelPopup.contains(MULTIPLO)){
             listaCorretti.add(MULTIPLO);
-          } else if(isMultiple(tavolo.piatto.first, playedCard.value) && !azioniAllaFineDelPopup.contains(MULTIPLO)){
+          } else if(isMul && !azioniAllaFineDelPopup.contains(MULTIPLO)){
             listaErrori.add(MULTIPLO);
-          } else if(!isMultiple(tavolo.piatto.first, playedCard.value) && azioniAllaFineDelPopup.contains(MULTIPLO)){
+          } else if(!isMul && azioniAllaFineDelPopup.contains(MULTIPLO)){
             listaErrori.add(MULTIPLO);
           }
           break;
         case SPECULARE:
-          if(isSpecular(tavolo.piatto.first, playedCard.value) && azioniAllaFineDelPopup.contains(SPECULARE)){
+          bool isSpec = isSpecular(tavolo.piatto.first, playedCard.value);
+          if(isSpec && azioniAllaFineDelPopup.contains(SPECULARE)){
             listaCorretti.add(SPECULARE);
-          } else if(isSpecular(tavolo.piatto.first, playedCard.value) && !azioniAllaFineDelPopup.contains(SPECULARE)){
+          } else if(isSpec && !azioniAllaFineDelPopup.contains(SPECULARE)){
             listaErrori.add(SPECULARE);
-          } else if(!isSpecular(tavolo.piatto.first, playedCard.value) && azioniAllaFineDelPopup.contains(SPECULARE)){
+          } else if(!isSpec && azioniAllaFineDelPopup.contains(SPECULARE)){
             listaErrori.add(SPECULARE);
           }
           break;
         case PRIMO:
-          if(isPrime(playedCard.value) && azioniAllaFineDelPopup.contains(PRIMO)){
+          bool isPrimo = isPrime(playedCard.value);
+          if(isPrimo && azioniAllaFineDelPopup.contains(PRIMO)){
             listaCorretti.add(PRIMO);
-          } else if(isPrime(playedCard.value) && !azioniAllaFineDelPopup.contains(PRIMO)){
+          } else if(isPrimo && !azioniAllaFineDelPopup.contains(PRIMO)){
             listaErrori.add(PRIMO);
-          } else if(!isPrime(playedCard.value) && azioniAllaFineDelPopup.contains(PRIMO)){
+          } else if(!isPrimo && azioniAllaFineDelPopup.contains(PRIMO)){
             listaErrori.add(PRIMO);
           }
           break;
         case ZERO:
-          if(isZero(playedCard.value) && azioniAllaFineDelPopup.contains(ZERO)){
+          bool isZ = isZero(playedCard.value, playedCard.value);
+          if(isZ && azioniAllaFineDelPopup.contains(ZERO)){
             listaCorretti.add(ZERO);
-          } else if(isZero(playedCard.value) && !azioniAllaFineDelPopup.contains(ZERO)){
+          } else if(isZ && !azioniAllaFineDelPopup.contains(ZERO)){
             listaErrori.add(ZERO);
-          } else if(!isZero(playedCard.value) && azioniAllaFineDelPopup.contains(ZERO)){
+          } else if(!isZ && azioniAllaFineDelPopup.contains(ZERO)){
             listaErrori.add(ZERO);
           }
           break;
         case EULER_DIVERSO:
-          if(isEulerDiversoDaZero(playedCard.value as String) && azioniAllaFineDelPopup.contains(EULER_DIVERSO)){
+          bool isEuler = isEulerDiversoDaZero(playedCard.value);
+          if(isEuler && azioniAllaFineDelPopup.contains(EULER_DIVERSO)){
             listaCorretti.add(EULER_DIVERSO);
-          } else if(isEulerDiversoDaZero(playedCard.value as String) && !azioniAllaFineDelPopup.contains(EULER_DIVERSO)){
+          } else if(isEuler && !azioniAllaFineDelPopup.contains(EULER_DIVERSO)){
             listaErrori.add(EULER_DIVERSO);
-          } else if(!isEulerDiversoDaZero(playedCard.value as String) && azioniAllaFineDelPopup.contains(EULER_DIVERSO)){
+          } else if(!isEuler && azioniAllaFineDelPopup.contains(EULER_DIVERSO)){
             listaErrori.add(EULER_DIVERSO);
           }
           break;
         case QUADRATO:
-          if(isSquare(playedCard.value) && azioniAllaFineDelPopup.contains(QUADRATO)){
+          bool isSqua = isSquare(playedCard.value);
+          if(isSqua && azioniAllaFineDelPopup.contains(QUADRATO)){
             listaCorretti.add(QUADRATO);
-          } else if(isSquare(playedCard.value) && !azioniAllaFineDelPopup.contains(QUADRATO)){
+          } else if(isSqua && !azioniAllaFineDelPopup.contains(QUADRATO)){
             listaErrori.add(QUADRATO);
-          } else if(!isSquare(playedCard.value) && azioniAllaFineDelPopup.contains(QUADRATO)){
+          } else if(!isSqua && azioniAllaFineDelPopup.contains(QUADRATO)){
             listaErrori.add(QUADRATO);
           }
           break;
         case PERFETTO:
-          if(isPerfectNumber(playedCard.value) && azioniAllaFineDelPopup.contains(PERFETTO)){
+          bool isPerfect = isPerfectNumber(playedCard.value);
+          if(isPerfect && azioniAllaFineDelPopup.contains(PERFETTO)){
             listaCorretti.add(PERFETTO);
-          } else if(isPerfectNumber(playedCard.value) && !azioniAllaFineDelPopup.contains(PERFETTO)){
+          } else if(isPerfect && !azioniAllaFineDelPopup.contains(PERFETTO)){
             listaErrori.add(PERFETTO);
-          } else if(!isPerfectNumber(playedCard.value) && azioniAllaFineDelPopup.contains(PERFETTO)){
+          } else if(!isPerfect && azioniAllaFineDelPopup.contains(PERFETTO)){
             listaErrori.add(PERFETTO);
           }
           break;
         case COMPLEMENTARE:
-          if(complementare(tavolo.piatto.first, playedCard.value) && azioniAllaFineDelPopup.contains(COMPLEMENTARE)){
+          bool isCompl = complementare(tavolo.piatto.first, playedCard.value);
+          if(isCompl && azioniAllaFineDelPopup.contains(COMPLEMENTARE)){
             listaCorretti.add(COMPLEMENTARE);
-          } else if(complementare(tavolo.piatto.first, playedCard.value) && !azioniAllaFineDelPopup.contains(COMPLEMENTARE)){
+          } else if(isCompl && !azioniAllaFineDelPopup.contains(COMPLEMENTARE)){
             listaErrori.add(COMPLEMENTARE);
-          } else if(!complementare(tavolo.piatto.first, playedCard.value) && azioniAllaFineDelPopup.contains(COMPLEMENTARE)){
+          } else if(!isCompl && azioniAllaFineDelPopup.contains(COMPLEMENTARE)){
             listaErrori.add(COMPLEMENTARE);
           }
           break;
         case CUBO:
-          if(isCube(playedCard.value) && azioniAllaFineDelPopup.contains(CUBO)){
+          bool isCu = isCube(playedCard.value);
+          if(isCu && azioniAllaFineDelPopup.contains(CUBO)){
             listaCorretti.add(CUBO);
-          } else if(isCube(playedCard.value) && !azioniAllaFineDelPopup.contains(CUBO)){
+          } else if(isCu && !azioniAllaFineDelPopup.contains(CUBO)){
             listaErrori.add(CUBO);
-          } else if(!isCube(playedCard.value) && azioniAllaFineDelPopup.contains(CUBO)){
+          } else if(!isCu && azioniAllaFineDelPopup.contains(CUBO)){
             listaErrori.add(CUBO);
           }
           break;
         case MCM:
-          if(isMcm(tavolo.piatto, playedCard.value) && azioniAllaFineDelPopup.contains(MCM)){
+          bool mcm = isMcm(tavolo.piatto, playedCard.value);
+          if(mcm && azioniAllaFineDelPopup.contains(MCM)){
             listaCorretti.add(MCM);
-          } else if(isMcm(tavolo.piatto, playedCard.value) && !azioniAllaFineDelPopup.contains(MCM)){
+          } else if(mcm && !azioniAllaFineDelPopup.contains(MCM)){
             listaErrori.add(MCM);
-          } else if(!isMcm(tavolo.piatto, playedCard.value) && azioniAllaFineDelPopup.contains(MCM)){
+          } else if(!mcm && azioniAllaFineDelPopup.contains(MCM)){
             listaErrori.add(MCM);
           }
           break;
         case MCD:
-          if(isMCD(tavolo.piatto, playedCard.value) && azioniAllaFineDelPopup.contains(MCD)){
+          bool mcd = isMCD(tavolo.piatto, playedCard.value);
+          if(mcd && azioniAllaFineDelPopup.contains(MCD)){
             listaCorretti.add(MCD);
-          } else if(isMCD(tavolo.piatto, playedCard.value) && !azioniAllaFineDelPopup.contains(MCD)){
+          } else if(mcd && !azioniAllaFineDelPopup.contains(MCD)){
             listaErrori.add(MCD);
-          } else if(!isMCD(tavolo.piatto, playedCard.value) && azioniAllaFineDelPopup.contains(MCD)){
+          } else if(!mcd && azioniAllaFineDelPopup.contains(MCD)){
             listaErrori.add(MCD);
           }
           break;
         case LISCIA:
-          if(isLiscia(tavolo.piatto, tavolo.piatto.first, playedCard.value) && azioniAllaFineDelPopup.contains(LISCIA)){
+          bool liscia = isLiscia(tavolo.piatto, tavolo.piatto.first, playedCard.value);
+          if(liscia && azioniAllaFineDelPopup.contains(LISCIA)){
             listaCorretti.add(LISCIA);
-          } else if(isLiscia(tavolo.piatto, tavolo.piatto.first, playedCard.value) && !azioniAllaFineDelPopup.contains(LISCIA)){
+          } else if(liscia && !azioniAllaFineDelPopup.contains(LISCIA)){
             listaErrori.add(LISCIA);
-          } else if(!isLiscia(tavolo.piatto, tavolo.piatto.first, playedCard.value) && azioniAllaFineDelPopup.contains(LISCIA)){
+          } else if(liscia && azioniAllaFineDelPopup.contains(LISCIA)){
             listaErrori.add(LISCIA);
           }
           break;
@@ -168,13 +190,6 @@ class Rules {
     }
 
       return PlayerActions(listaCorretti: [...listaCorretti], listaErrori: [...listaErrori]);
-  }
-
-  void divisoreEffetti(){
-    //TODO Sia q il quoziente della divisione tra la first card l e la carta giocata g. Il team che scarta il divisore 
-    //g raccoglie dal piatto le ultime q carte scartate lasciando al loro posto quella giocata, che diventa 
-    //la nuova first card.
-
   }
 
   //regola divisore
@@ -236,12 +251,12 @@ class Rules {
   }
 
   //Euler card zero
-  bool isZero(String cardValue){
+  bool isZero(String cardValue, String lastCard){
     if(isNotNumber(cardValue)) return false;
-
-    int number  = int.parse(cardValue);
-
-    return number == 0;
+    
+    if(lastCard == '0') return false;
+    
+    return cardValue == '0';
   }
 
   //Euler card not zero
@@ -376,7 +391,7 @@ class Rules {
       return false;
     }
 
-    if(isZero(card) || isSquare(card) || isDivisible(firstCard, card) || isMultiple(firstCard, card) ||
+    if(isZero(card, firstCard) || isSquare(card) || isDivisible(firstCard, card) || isMultiple(firstCard, card) ||
     isSpecular(firstCard, card) || isPrime(card) || isSquare(card) || complementare(firstCard, card)
     || isCube(card)){
       return false;

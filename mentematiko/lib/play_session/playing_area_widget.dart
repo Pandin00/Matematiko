@@ -103,7 +103,11 @@ class _PlayingAreaWidgetState extends State<PlayingAreaWidget> {
                     setState(() {
                       flagWarranty = value;
                       if (value != null) {
-                        selections.add(Rules.DIVISIBILE);
+                        if (value) {
+                          selections.add(Rules.DIVISIBILE);
+                        } else {
+                          selections.remove(Rules.DIVISIBILE);
+                        }                      
                       }
                     });
                   },
@@ -116,7 +120,11 @@ class _PlayingAreaWidgetState extends State<PlayingAreaWidget> {
                     setState(() {
                       flagWarranty = value;
                       if (value != null) {
-                        selections.add(Rules.MULTIPLO);
+                        if (value) {
+                          selections.add(Rules.MULTIPLO);
+                        } else {
+                          selections.remove(Rules.MULTIPLO);
+                        }
                       }
                     });
                   },
@@ -129,7 +137,11 @@ class _PlayingAreaWidgetState extends State<PlayingAreaWidget> {
                     setState(() {
                       flagWarranty = value;
                       if (value != null) {
-                        selections.add(Rules.SPECULARE);
+                        if (value) {
+                          selections.add(Rules.SPECULARE);
+                        } else {
+                          selections.remove(Rules.SPECULARE);
+                        }
                       }
                     });
                   },
@@ -142,7 +154,11 @@ class _PlayingAreaWidgetState extends State<PlayingAreaWidget> {
                     setState(() {
                       flagWarranty = value;
                       if (value != null) {
-                        selections.add(Rules.PRIMO);
+                        if (value) {
+                          selections.add(Rules.PRIMO);
+                        } else {
+                          selections.remove(Rules.PRIMO);
+                        }
                       }
                     });
                   },
@@ -155,7 +171,11 @@ class _PlayingAreaWidgetState extends State<PlayingAreaWidget> {
                     setState(() {
                       flagWarranty = value;
                       if (value != null) {
-                        selections.add(Rules.ZERO);
+                        if (value) {
+                          selections.add(Rules.ZERO);
+                        } else {
+                          selections.remove(Rules.ZERO);
+                        }
                       }
                     });
                   },
@@ -168,7 +188,11 @@ class _PlayingAreaWidgetState extends State<PlayingAreaWidget> {
                     setState(() {
                       flagWarranty = value;
                       if (value != null) {
-                        selections.add(Rules.EULER_DIVERSO);
+                        if (value) {
+                          selections.add(Rules.EULER_DIVERSO);
+                        } else {
+                          selections.remove(Rules.EULER_DIVERSO);
+                        }
                       }
                     });
                   },
@@ -181,7 +205,11 @@ class _PlayingAreaWidgetState extends State<PlayingAreaWidget> {
                     setState(() {
                       flagWarranty = value;
                       if (value != null) {
-                        selections.add(Rules.QUADRATO);
+                        if (value) {
+                          selections.add(Rules.QUADRATO);
+                        } else {
+                          selections.remove(Rules.QUADRATO);
+                        }
                       }
                     });
                   },
@@ -194,7 +222,11 @@ class _PlayingAreaWidgetState extends State<PlayingAreaWidget> {
                     setState(() {
                       flagWarranty = value;
                       if (value != null) {
-                        selections.add(Rules.PERFETTO);
+                        if (value) {
+                          selections.add(Rules.PERFETTO);
+                        } else {
+                          selections.remove(Rules.PERFETTO);
+                        }
                       }
                     });
                   },
@@ -207,7 +239,11 @@ class _PlayingAreaWidgetState extends State<PlayingAreaWidget> {
                     setState(() {
                       flagWarranty = value;
                       if (value != null) {
-                        selections.add(Rules.COMPLEMENTARE);
+                        if (value) {
+                          selections.add(Rules.COMPLEMENTARE);
+                        } else {
+                          selections.remove(Rules.COMPLEMENTARE);
+                        }
                       }
                     });
                   },
@@ -220,7 +256,11 @@ class _PlayingAreaWidgetState extends State<PlayingAreaWidget> {
                     setState(() {
                       flagWarranty = value;
                       if (value != null) {
-                        selections.add(Rules.CUBO);
+                        if (value) {
+                          selections.add(Rules.CUBO);
+                        } else {
+                          selections.remove(Rules.CUBO);
+                        }
                       }
                     });
                   },
@@ -233,7 +273,11 @@ class _PlayingAreaWidgetState extends State<PlayingAreaWidget> {
                     setState(() {
                       flagWarranty = value;
                       if (value != null) {
-                        selections.add(Rules.MCM);
+                        if (value) {
+                          selections.add(Rules.MCM);
+                        } else {
+                          selections.remove(Rules.MCM);
+                        }
                       }
                     });
                   },
@@ -246,7 +290,11 @@ class _PlayingAreaWidgetState extends State<PlayingAreaWidget> {
                     setState(() {
                       flagWarranty = value;
                       if (value != null) {
-                        selections.add(Rules.MCD);
+                        if (value) {
+                          selections.add(Rules.MCD);
+                        } else {
+                          selections.remove(Rules.MCD);
+                        }
                       }
                     });
                   },
@@ -259,7 +307,11 @@ class _PlayingAreaWidgetState extends State<PlayingAreaWidget> {
                     setState(() {
                       flagWarranty = value;
                       if (value != null) {
-                        selections.add(Rules.LISCIA);
+                        if (value) {
+                          selections.add(Rules.LISCIA);
+                        } else {
+                          selections.remove(Rules.LISCIA);
+                        }
                       }
                     });
                   },
@@ -273,7 +325,6 @@ class _PlayingAreaWidgetState extends State<PlayingAreaWidget> {
                     data.holder.playCard(data.card, selections,data.room);
 
                 //chiama board_start per eseguire gli effetti e le operazioni su db
-
                 Navigator.pop(context);
               },
               child: Text('Sottometti'),
