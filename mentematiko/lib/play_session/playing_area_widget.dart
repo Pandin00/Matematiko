@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:card/game_internals/board_state.dart';
 import 'package:card/models/Room.dart';
 import 'package:card/models/playable_cards.dart';
+import 'package:card/models/rules_validation_result.dart';
 import 'package:card/services/rules_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -57,7 +58,8 @@ class _PlayingAreaWidgetState extends State<PlayingAreaWidget> {
                       tableCards = snapshot.data?.piatto
                           ?.map((e) => PlayableCards.buildFromValue(e))
                           .toList();
-                      return _CardStack(snapshot.data?.piatto,widget._boardState.getCurrentRoom());
+                      return _CardStack(snapshot.data?.piatto,
+                          widget._boardState.getCurrentRoom());
                     } else {
                       // Return a placeholder or loading indicator if needed
                       return CircularProgressIndicator();
@@ -320,10 +322,13 @@ class _PlayingAreaWidgetState extends State<PlayingAreaWidget> {
             }),
             ElevatedButton(
               onPressed: () {
-                //aggiorna localmente e ritorna le azioni/errori
-                List<String> effects =
-                    data.holder.playCard(data.card, selections,data.room);
-
+                
+                if (widget._boardState.currentPlayer.playing) {
+                  //aggiorna localmente e ritorna le azioni/errori
+                  RulesValidationResult result =
+                      data.holder.playCard(data.card, selections, data.room);
+                  widget._boardState.applyEffects(result);
+                }
                 //chiama board_start per eseguire gli effetti e le operazioni su db
                 Navigator.pop(context);
               },
@@ -404,7 +409,7 @@ class _CardStack extends StatelessWidget {
             .reversed
             .toList()
         : List.empty();
-    currentRoom=room;
+    currentRoom = room;
   }
 
   @override
@@ -421,7 +426,10 @@ class _CardStack extends StatelessWidget {
               Positioned(
                 top: i * _topOffset,
                 left: i * _leftOffset,
-                child: PlayingCardWidget(cards![i],room: currentRoom,),
+                child: PlayingCardWidget(
+                  cards![i],
+                  room: currentRoom,
+                ),
               ),
           ],
         ),

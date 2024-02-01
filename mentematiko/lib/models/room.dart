@@ -12,16 +12,22 @@ class Room {
 
   List<Player>? players;
 
+  String log=''; //log giocate e notifiche
+  int? turno = 1;
 
+//log
 
   Room(
       {required this.time,
+      this.turno,
       required this.numberOfPlayers,
       required this.code,
       required this.numericCards,
       required this.nerdCards,
       required this.euleroCards,
-      required this.piatto});
+      required this.piatto,
+      required this.log
+      });
 
 
 
@@ -35,6 +41,8 @@ class Room {
       'numeric_card': numericCards.map((e) => e.toString()).toList(),
       'eulero_card': euleroCards,
       'piatto': piatto,
+      'log': log,
+      'turno': turno
     };
   }
 
@@ -46,7 +54,9 @@ class Room {
         numericCards: _convertInt(data['numeric_card']),
         nerdCards: _convertString(data['nerd_card']),
         euleroCards: _convertString(data['eulero_card']),
-        piatto: data['piatto'] != null ? _convertString(data['piatto']) : List.empty()  
+        piatto: data['piatto'] != null ? _convertString(data['piatto']) : List.empty(),
+        log: data['log'] ?? '',
+        turno: data['turno']?? 1,
     );
   }
 

@@ -1,3 +1,4 @@
+import 'dart:ffi';
 import 'dart:math';
 
 import 'package:card/models/Room.dart';
@@ -72,7 +73,8 @@ class MatchService {
         'code': 'M${_generateRandomCode(Random(), 5)}',
         'numeric_card': shuffled,
         'nerd_card': nerds,
-        'eulero_card': eul
+        'eulero_card': eul,
+        'log': ''
       };
 
       await main.set(settingsData);
@@ -103,14 +105,16 @@ class MatchService {
             id: '${user.email}${'§'}${user.nome}',
             point: 0,
             order: order,
-            playing: false);
+            playing: false,
+            untouchable: -1,
+            random: -1);
         main
             .doc(querySnapshot.docs.first.id)
             .collection('players')
             .doc(user.email)
             .set(p.toFirestore());
         return JoinedItem(querySnapshot.docs.first.id.toString(),
-            currentRoom.numberOfPlayers,currentRoom.time);
+            currentRoom.numberOfPlayers, currentRoom.time);
       } else {
         return JoinedItem.fromError("FULL");
       }
@@ -177,7 +181,7 @@ class MatchService {
     }
   }
 
-  Future<Player?> searchByOrder(String idRoom, int order ) async {
+  Future<Player?> searchByOrder(String idRoom, int order) async {
     var players =
         firestore.collection('rooms').doc(idRoom).collection('players');
 
@@ -227,33 +231,117 @@ class MatchService {
     }
   }
 
+  Future<void> applyMulta(
+      String idRoom, Player currentPlayer, Room room) async {
+    if (currentPlayer.cards!.isNotEmpty) {
+      String type = '';
+      int extracted = -1;
+      int tentative = 0;
+      do {
+        extracted = Random().nextInt(currentPlayer.cards!.length);
+        type = currentPlayer.cards![extracted].type;
+        ++tentative;
+      } while (type == 'E' && tentative < 10);
 
-  Future<void> updateNextPlayerByCurrentPlayer(String idRoom, int maxPlayers, Player current) async {
+      if (tentative == 9) return;
+      _log.info("carta estratta ${currentPlayer.cards![extracted]}");
+      PlayableCards card = currentPlayer.cards!.removeAt(extracted);
+      room.numericCards.add(int.parse(card.value));
+
+      //update on firestore
+      updateRoomAndPlayer(idRoom, currentPlayer, room);
+    }
+  }
+
+//liscia
+  Future<void> updateRoomAndPlayer(
+      String idRoom, Player currentPlayer, Room room) async {
+    var roomDoc = firestore.collection('rooms').doc(idRoom);
+    var playersDoc =
+        roomDoc.collection('players').doc(currentPlayer.getDocumentId());
+
+    //calcola punti (da scrivere)
+    await roomDoc.update(room.toFirestore());
+    await playersDoc.update(currentPlayer.toFirestore());
+  }
+
+  void speculare(String idRoom, Player currentPlayer, Room room) async {
     var players =
         firestore.collection('rooms').doc(idRoom).collection('players');
-      String currentId = current.order == 0 ? 'ARB' : current.id.split('§')[0];
-      current.playing = false;
-      int next = current.order + 1;
-      if (next > maxPlayers) {
-        next = 1; //ARB è 0 e non gioca
-      }
-      //search next
-      QuerySnapshot<Player> searchByOrder = await players
-          .where('order', isEqualTo: next)
-          .withConverter(
-              fromFirestore: (snapshot, _) =>
-                  Player.fromFirestore(snapshot.data()!),
-              toFirestore: (player, _) => {})
-          .get();
 
-      Player nextPlayer = searchByOrder.docs.first.data();
-      nextPlayer.playing = true;
-      //aggiorna
-      await players
-          .doc(searchByOrder.docs.first.id)
-          .set(nextPlayer.toFirestore());
-      await players.doc(currentId).set(current.toFirestore());
-    
+    QuerySnapshot playerInGame = await players.get();
+    int totalEntities = playerInGame.docs.length;
+    int circularShift =
+        (totalEntities - currentPlayer.order + 1) % totalEntities;
+    var batch = firestore.batch();
+    for (QueryDocumentSnapshot document in playerInGame.docs) {
+      var data = document.data() as Map<String, dynamic>;
+      int newOrder = ((data['order'] - circularShift - 1 + totalEntities) %
+              totalEntities) +
+          1;
+      batch.update(document.reference, {'order': newOrder});
+    }
+    batch.commit();
+
+    //update on firestore
+    updateRoomAndPlayer(idRoom, currentPlayer, room);
+  }
+
+  Future<void> recursiveReverseOrder(
+      String idRoom,
+      Player currentPlayer,
+      int oldOrder,
+      int newOrder,
+      DocumentReference<Map<String, dynamic>> roomDoc) async {
+    currentPlayer.order = newOrder;
+    //aggiorna con nuovo valore
+    roomDoc
+        .collection('players')
+        .doc(currentPlayer.getDocumentId())
+        .set(currentPlayer.toFirestore());
+    if (oldOrder - 1 > 0) {
+      Player? p = await searchByOrder(idRoom, oldOrder - 1);
+      if (p != null) {
+        recursiveReverseOrder(
+            idRoom, currentPlayer, p.order, currentPlayer.order + 1, roomDoc);
+      }
+    } else if (oldOrder - 1 == 0) {
+      Player? p = await searchByOrder(idRoom, oldOrder + 1); //max
+      if (p != null) {
+        recursiveReverseOrder(
+            idRoom, currentPlayer, p.order, currentPlayer.order - 1, roomDoc);
+      }
+    } else if (oldOrder == 1) {
+      //FINE
+    }
+  }
+
+  Future<void> updateNextPlayerByCurrentPlayer(
+      String idRoom, int maxPlayers, Player current) async {
+    var players =
+        firestore.collection('rooms').doc(idRoom).collection('players');
+    String currentId = current.order == 0 ? 'ARB' : current.id.split('§')[0];
+    current.playing = false;
+    int next = current.order + 1;
+    if (next > maxPlayers) {
+      next = 1; //ARB è 0 e non gioca
+    }
+    //search next
+    QuerySnapshot<Player> searchByOrder = await players
+        .where('order', isEqualTo: next)
+        .withConverter(
+            fromFirestore: (snapshot, _) =>
+                Player.fromFirestore(snapshot.data()!),
+            toFirestore: (player, _) => {})
+        .get();
+
+    Player nextPlayer = searchByOrder.docs.first.data();
+    nextPlayer.playing = true;
+    //aggiorna
+    await players
+        .doc(searchByOrder.docs.first.id)
+        .set(nextPlayer.toFirestore());
+    await players.doc(currentId).set(current.toFirestore());
   }
 
   Future<void> updateWhoIsPlaying(
@@ -430,7 +518,7 @@ class JoinedItem {
   int? maxPlayers;
   String? errorCode;
 
-  JoinedItem(this.roomId, this.maxPlayers,this.time) {
+  JoinedItem(this.roomId, this.maxPlayers, this.time) {
     errorCode = '';
   }
 

@@ -20,7 +20,7 @@ class OpponentWidget extends StatefulWidget {
 }
 
 class _OpponentWidgetState extends State<OpponentWidget> {
-  late Player player;
+  Player? player;
 
   @override
   void initState() {
@@ -28,12 +28,14 @@ class _OpponentWidgetState extends State<OpponentWidget> {
     _loadPlayerData();
   }
 
-  Future<void> _loadPlayerData() async {
-    final value =
-        await widget.matchService.searchByOrder(widget.idRoom, widget.order);
-    setState(() {
-      player = value!;
-    });
+  void _loadPlayerData() {
+    widget.matchService
+        .searchByOrder(widget.idRoom, widget.order)
+        .then((value) => {
+              setState(() {
+                player = value!;
+              })
+            });
   }
 
   @override
@@ -46,10 +48,11 @@ class _OpponentWidgetState extends State<OpponentWidget> {
         ),
         const SizedBox(
             width: 16), // Aggiunge uno spazio tra il cerchio e il testo
-        Text('Opponent Name: ${player.id.split("§")[1]}'),
+        Text('Opponent Name: ${player!.id.split("§")[1]}'),
         ElevatedButton(
           onPressed: () {
-            _loadPlayerData().whenComplete(() => showCard(context, player.cards!));
+            _loadPlayerData();
+            showCard(context, player!.cards!);
           },
           child: Text('Show cards'),
         ),

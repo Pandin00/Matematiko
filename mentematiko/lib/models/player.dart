@@ -1,5 +1,6 @@
-import 'package:card/models/playable_cards.dart';
 import 'package:card/models/Room.dart';
+import 'package:card/models/playable_cards.dart';
+import 'package:card/models/rules_validation_result.dart';
 import 'package:card/services/rules_service.dart';
 import 'package:flutter/foundation.dart';
 
@@ -11,7 +12,12 @@ class Player extends ChangeNotifier {
   //lista di oggetto cards (?)
   List<PlayableCards>? cards; //mazzo di carte in mano al giocatore
 
+  int? untouchable = -1; //non attaccabile x n° turni
+  int? random = -1; //gioca random card mandatory
+
   Player({
+    this.untouchable,
+    this.random,
     required this.id,
     required this.point,
     required this.order,
@@ -25,7 +31,9 @@ class Player extends ChangeNotifier {
       'point': point,
       'playing': playing,
       'cards': cards?.map((e) => e.value.toString()).toList() ?? [],
-      'order': order
+      'order': order,
+      'untouchable': untouchable,
+      'random': random,
     };
   }
 
@@ -37,7 +45,9 @@ class Player extends ChangeNotifier {
         playing: data['playing'] ?? false,
         cards: data['cards'] != null
             ? _convertToPlayable(data['cards'])
-            : List.empty(growable: true));
+            : List.empty(growable: true),
+        untouchable: data['untouchable'] ?? -1,
+        random: data['random'] ?? -1);
   }
 
   static List<PlayableCards> _convertToPlayable(List<dynamic> dynamicList) {
@@ -62,16 +72,23 @@ class Player extends ChangeNotifier {
     return list;
   }
 
+  String getDocumentId() {
+    return id.split('§')[0];
+  }
 
-  List<String> playCard(PlayableCards played,List<String> choice,Room room){
-    PlayableCards? deck=cards?.firstWhere((element) => element==played, orElse: ()=> PlayableCards.nullCard);  
+  RulesValidationResult playCard(
+      PlayableCards played, List<String> choice, Room room) {
+    PlayableCards? deck = cards?.firstWhere((element) => element == played,
+        orElse: () => PlayableCards.nullCard);
     cards?.remove(deck);
-    Rules rules=Rules(currentPlayer: this,azioniAllaFineDelPopup: choice,tavolo: room,playedCard: played);
-    rules.eseguiRegoleDelGioco();
+
+    Rules rules = Rules(
+        currentPlayer: this,
+        azioniAllaFineDelPopup: choice,
+        tavolo: room,
+        playedCard: played);
+    return rules.eseguiRegoleDelGioco();
 
     //esegue le validazioni & aggiorna i punti localmente
-  
-
-    return List.empty();
   }
 }

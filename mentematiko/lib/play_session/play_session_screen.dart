@@ -335,7 +335,8 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
     _boardState = BoardState(
         onWin: _playerWon,
         matchService: widget.matchService,
-        currentPlayer: widget.currentPlayer!);
+        currentPlayer: widget.currentPlayer!,
+        idRoom: idRoom!);
     _boardState.listeningOnTable(idRoom!);
     _boardState.listeningOnCurrentPlayer(idRoom!);
     _timerExpired=!_boardState.currentPlayer.playing;

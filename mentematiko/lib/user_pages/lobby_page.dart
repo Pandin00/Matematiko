@@ -50,8 +50,9 @@ class _LobbyPageState extends State<LobbyPage> {
             if (isStarted(snapshot, widget.user)) {
               widget.matchService
                     .searchByUser(idRoom!, widget.user)
-                    .then((value) => currentPlayer = value!)
-                    .whenComplete(() => GoRouter.of(context).go('/play', extra: currentPlayer));
+                    .then((value) => {
+                          GoRouter.of(context).go('/play', extra: value)
+                    });
 
               
             }
