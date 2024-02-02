@@ -14,6 +14,7 @@ class BoardState extends ChangeNotifier {
 
   Room? _currentRoom;
   String idRoom;
+  int maxPlayers;
 
   final StreamController<Room> tableController =
       StreamController<Room>.broadcast(); //tavolo
@@ -29,7 +30,8 @@ class BoardState extends ChangeNotifier {
       {required this.onWin,
       required this.matchService,
       required this.currentPlayer,
-      required this.idRoom}) {
+      required this.idRoom,
+      required this.maxPlayers}) {
     currentPlayer.addListener(_handlePlayed);
   }
 
@@ -49,6 +51,7 @@ class BoardState extends ChangeNotifier {
   }
 
   void listeningOnCurrentPlayer(String idRoom) {
+    notifyListeners(); //a priori per evitare il bug del player!
     matchService
         .getPlayerInRealTime(idRoom, currentPlayer.id.split('§')[0])
         .listen((event) {
@@ -68,23 +71,52 @@ class BoardState extends ChangeNotifier {
       } else {
         _log.info("Effetti su : ${entry.key}  ${entry.value.toString()} ");
         _effects(entry);
-        
       }
     }
   }
 
-
-  void _effects(MapEntry<String,Validation> entry){
-    switch(entry.key){
-       case Rules.LISCIA:
-             matchService.updateRoomAndPlayer(idRoom, currentPlayer, _currentRoom!);
-             break;
-       case Rules.SPECULARE:
-             matchService.speculare(idRoom, currentPlayer, _currentRoom!);
-             break;
-
+  void _effects(MapEntry<String, Validation> entry) {
+    switch (entry.key) {
+      case Rules.LISCIA:
+        matchService.updateRoomAndPlayer(idRoom, currentPlayer, _currentRoom!);
+        break;
+      case Rules.SPECULARE:
+        matchService.speculare(idRoom, currentPlayer, _currentRoom!);
+        break;
+      case Rules.DIVISIBILE:
+        matchService.effettoDivisore(
+            currentPlayer, _currentRoom!, idRoom, entry.value.result);
+        break;
+      case Rules.MULTIPLO:
+        matchService.effettoMultiplo(idRoom, currentPlayer, _currentRoom!);
+        break;
+      case Rules.PRIMO:
+        matchService.effettoPrimo(
+            idRoom, currentPlayer, _currentRoom!, maxPlayers);
+        break;
+      case Rules.ZERO:
+        matchService.effettoZero(idRoom, _currentRoom!);
+        break;
+      case Rules.EULER_DIVERSO:
+        matchService.effettoEulero(idRoom, currentPlayer, _currentRoom!);
+        break;
+      case Rules.QUADRATO:
+        break;
+      case Rules.PERFETTO:
+        matchService.effettoNumeroPerfetto(
+            idRoom, currentPlayer, _currentRoom!, entry.value.result);
+        break;
+      case Rules.COMPLEMENTARE:
+        matchService.effettoComplementare(idRoom, currentPlayer, _currentRoom!);
+        break;
+      case Rules.MCM:
+        matchService.effettoEulero(idRoom, currentPlayer, _currentRoom!);
+        break;
+      case Rules.MCD:
+        matchService.effettoMcd(
+            idRoom, currentPlayer, _currentRoom!, maxPlayers);
+        break;
     }
-
   }
 
   //List<PlayingArea> get areas => [areaOne];

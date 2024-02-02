@@ -1,4 +1,3 @@
-import 'dart:ffi';
 import 'dart:math';
 
 import 'package:card/models/Room.dart';
@@ -265,6 +264,17 @@ class MatchService {
     await playersDoc.update(currentPlayer.toFirestore());
   }
 
+  Future<void> updatePlayer(String idRoom, Player player) async {
+    var roomDoc = firestore.collection('rooms').doc(idRoom);
+    var playersDoc = roomDoc.collection('players').doc(player.getDocumentId());
+    await playersDoc.update(player.toFirestore());
+  }
+
+  Future<void> updateRoom(String idRoom, Room room) async {
+    var roomDoc = firestore.collection('rooms').doc(idRoom);
+    await roomDoc.update(room.toFirestore());
+  }
+
   void speculare(String idRoom, Player currentPlayer, Room room) async {
     var players =
         firestore.collection('rooms').doc(idRoom).collection('players');
@@ -285,35 +295,6 @@ class MatchService {
 
     //update on firestore
     updateRoomAndPlayer(idRoom, currentPlayer, room);
-  }
-
-  Future<void> recursiveReverseOrder(
-      String idRoom,
-      Player currentPlayer,
-      int oldOrder,
-      int newOrder,
-      DocumentReference<Map<String, dynamic>> roomDoc) async {
-    currentPlayer.order = newOrder;
-    //aggiorna con nuovo valore
-    roomDoc
-        .collection('players')
-        .doc(currentPlayer.getDocumentId())
-        .set(currentPlayer.toFirestore());
-    if (oldOrder - 1 > 0) {
-      Player? p = await searchByOrder(idRoom, oldOrder - 1);
-      if (p != null) {
-        recursiveReverseOrder(
-            idRoom, currentPlayer, p.order, currentPlayer.order + 1, roomDoc);
-      }
-    } else if (oldOrder - 1 == 0) {
-      Player? p = await searchByOrder(idRoom, oldOrder + 1); //max
-      if (p != null) {
-        recursiveReverseOrder(
-            idRoom, currentPlayer, p.order, currentPlayer.order - 1, roomDoc);
-      }
-    } else if (oldOrder == 1) {
-      //FINE
-    }
   }
 
   Future<void> updateNextPlayerByCurrentPlayer(
@@ -427,14 +408,16 @@ class MatchService {
     return code;
   }
 
-  Future<void> assignCardsFromPlate(int n, String idPlayer, String idRoom) async {
+  Future<void> assignCardsFromPlate(
+      int n, String idPlayer, String idRoom) async {
     var rooms = firestore.collection('rooms');
-    var players = firestore.collection('rooms').doc(idRoom).collection('players');
+    var players =
+        firestore.collection('rooms').doc(idRoom).collection('players');
 
     // get room document
     var roomDoc = await rooms.doc(idRoom).get();
     var piatto = roomDoc['piatto'];
-        
+
     // check if there are enough cards in the piatto
     if (piatto.length >= n) {
       // remove n cards from the piatto
@@ -444,69 +427,206 @@ class MatchService {
       // add n cards to the player's hand
       var playerDoc = await players.doc(idPlayer).get();
 
-      List<dynamic> updatedPlayerCards = playerDoc['cards']!..addAll(
-        piatto.sublist(0, n).map((e) => e.toString()).toList());
+      List<dynamic> updatedPlayerCards = playerDoc['cards']!
+        ..addAll(piatto.sublist(0, n).map((e) => e.toString()).toList());
 
       await players.doc(idPlayer).update({'cards': updatedPlayerCards});
-
     } else {
       // give all remaining cards to the player
-      await players.doc(idPlayer).update({'cards': FieldValue.arrayUnion(piatto)});
+      await players
+          .doc(idPlayer)
+          .update({'cards': FieldValue.arrayUnion(piatto)});
       await rooms.doc(idRoom).update({'piatto': []});
     }
   }
 
-  effettoDivisore(String lastCardValue, String playedCardValue, String idPlayer, String idRoom){
-    int lastCard = int.parse(lastCardValue);
-    int playedCard = int.parse(playedCardValue);
-    assignCardsFromPlate((lastCard/playedCard) as int,  idPlayer, idRoom);
+  Future<void> assignCardsFromRoom(
+      int n, String idRoom, Player player, Room room) async {
+    var rooms = firestore.collection('rooms');
+    var players =
+        firestore.collection('rooms').doc(idRoom).collection('players');
+
+    if (room.numericCards.isNotEmpty) {
+      int extracted = room.numericCards.removeAt(0);
+      player.cards?.add(PlayableCards.buildFromValue(extracted.toString()));
+    }
+  }
+
+  Future<void> effettoPrimo(
+      String idRoom, Player currentPlayer, Room room, int maxPlayers) async {
+    var rooms = firestore.collection('rooms');
+    var players =
+        firestore.collection('rooms').doc(idRoom).collection('players');
+    int pos = 0;
+    List<int> myNexts = getMyNextOrders(currentPlayer, maxPlayers);
+
+    _log.info("EffettoPrimo con $maxPlayers, sottraggo le carte a tutti!");
+    QuerySnapshot playerInGame = await players.get();
+    for (QueryDocumentSnapshot document in playerInGame.docs) {
+      //evita di ciclare il resto
+      if (pos >= 3) {
+        break;
+      }
+      if (document.id != 'ARB' &&
+          document.id != currentPlayer.getDocumentId()) {
+        Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+        Player otherPlayer = Player.fromFirestore(data);
+        if (myNexts.contains(otherPlayer.order)) {
+          //se il giocatore è ancora in gioco
+          if (otherPlayer.cards != null && otherPlayer.cards!.isNotEmpty) {
+            int extract = Random().nextInt(otherPlayer.cards!.length);
+            PlayableCards lostCard = otherPlayer.cards!.removeAt(extract);
+            currentPlayer.cards!.add(lostCard);
+            _log.info(
+                "Player ${otherPlayer.getDocumentId()}-${otherPlayer.order} lost $lostCard");
+            ++pos;
+            await updatePlayer(
+                idRoom, otherPlayer); //aggiorna le carte al giocatore
+          }
+        }
+      }
+    }
+    await updateRoomAndPlayer(
+        idRoom, currentPlayer, room); //aggiorna room e carte mie
+  }
+
+  Future<void> effettoZero(String idRoom, Room room) async {
+    var rooms = firestore.collection('rooms');
+    var players =
+        firestore.collection('rooms').doc(idRoom).collection('players');
+    _log.info(
+        "Effetto zero start piatto: ${room.piatto.length}  numeriche: ${room.numericCards.length} eulero: numeriche: ${room.euleroCards.length}");
+
+    for (var element in room.piatto) {
+      if (element != '0') {
+        PlayableCards playableCards = PlayableCards.buildFromValue(element);
+        if (playableCards.type == 'E') {
+          room.euleroCards.add(element);
+        } else if (playableCards.type == 'N') {
+          room.numericCards.add(int.parse(element));
+        }
+      }
+    }
+    //remove piatto
+    room.piatto.clear();
+    room.piatto.add("1");
+
+    //shuffle
+    _shuffleArray(room.euleroCards);
+    _shuffleArray(room.numericCards);
+
+    _log.info(
+        "Effetto zero end piatto: ${room.piatto.length}  numeriche: ${room.numericCards.length} eulero: numeriche: ${room.euleroCards.length}");
+    updateRoom(idRoom, room);
+  }
+
+  List<int> getMyNextOrders(Player currentPlayer, int maxPlayers) {
+    int currentOrder = currentPlayer.order;
+    List<int> myNext = List.empty(growable: true);
+    myNext.add(currentOrder + 1 % maxPlayers);
+    myNext.add(currentOrder + 2 % maxPlayers);
+    myNext.add(currentOrder + 3 % maxPlayers);
+
+    myNext = myNext.map((value) => value == 0 ? 1 : value).toList();
+    return myNext;
+  }
+
+  Future<void> effettoMultiplo(String idRoom, Player player, Room room) async {
+    assignCardsFromRoom(1, idRoom, player, room);
+    await updateRoomAndPlayer(idRoom, player, room);
+  }
+
+  Future<void> effettoDivisore(
+      Player currentPlayer, Room room, String idRoom, int q) async {
+    _log.info("Divisibile i get cards $q from table");
+    await assignCardsFromPlate(q, currentPlayer.getDocumentId(), idRoom);
+    await updateRoomAndPlayer(idRoom, currentPlayer, room);
   }
 
   //uguale per 6 e 11
-  effettoZeroMcm(String lastCardValue, String playedCardValue, String idPlayer, String idRoom) async {
+  effettoZeroMcm(String lastCardValue, String playedCardValue, String idPlayer,
+      String idRoom) async {
     var rooms = firestore.collection('rooms');
     var roomDoc = await rooms.doc(idRoom).get();
     var piatto = roomDoc['piatto'];
     assignCardsFromPlate(piatto.length, idPlayer, idRoom);
   }
 
-  effettoNumeroPerfetto(String playedCardValue, String idPlayer, String idRoom) async {
-    var rooms = firestore.collection('rooms');
-    var roomDoc = await rooms.doc(idRoom).get();
-    var piatto = roomDoc['piatto'];
-    var players = firestore.collection('rooms').doc(idRoom).collection('players');
-    var playerDoc = await players.doc(idPlayer).get();
+  Future<void> effettoNumeroPerfetto(
+      String idRoom, Player currentPlayer, Room room, int value) async {
+    List<PlayableCards> piattoExceptFirst = room.piatto
+        .skip(1)
+        .map((e) => PlayableCards.buildFromValue(e))
+        .toList();
 
-    // Converti playedCardValue in un intero
-    int playedCardValueInt = int.parse(playedCardValue);
-
-    List<String> updatedPlayerCards = playerDoc['cards'];
-
-    // Iteriamo su ogni elemento di piatto
-    for (var divisore in piatto) {
-      // Converti divisore in un intero
-      int divisoreInt = int.parse(divisore);
-
-      // Verifica se divisore è un divisore di playedCardValue
-      if (playedCardValueInt % divisoreInt == 0) {
-        // divisore è un divisore di playedCardValue
-        updatedPlayerCards.add(divisoreInt as String);
+    for (var divisore in piattoExceptFirst) {
+      if (divisore.type != 'E') {
+        int divInt = int.parse(divisore.value);
+        if (value % divInt == 0) {
+          currentPlayer.cards!.add(divisore);
+          room.piatto.remove(divisore.value);
+        }
       }
     }
-    await players.doc(idPlayer).update({'cards': updatedPlayerCards});
+    await updateRoomAndPlayer(idRoom, currentPlayer, room);
   }
 
-  effettoMcd(String playedCardValue, String idPlayer, String idRoom) async {
-    var rooms = firestore.collection('rooms');
-    var roomDoc = await rooms.doc(idRoom).get();
-    var euleroCard = roomDoc['eulero_card'];
-    var players = firestore.collection('rooms').doc(idRoom).collection('players');
-    var playerDoc = await players.doc(idPlayer).get();
+  Future<void> effettoComplementare(
+      String idRoom, Player currentPlayer, Room room) async {
+    currentPlayer.cards!
+        .add(PlayableCards.buildFromValue(room.piatto.skip(1).first));
+    await updatePlayer(idRoom, currentPlayer);
+  }
 
-    List<String> updatedPlayerCards = playerDoc['cards'];
-    updatedPlayerCards.add(euleroCard.first);
+  void effettoMcd(
+      String idRoom, Player currentPlayer, Room room, int maxPlayers) async {
+    if (room.euleroCards.isNotEmpty) {
+      String euler = room.euleroCards.removeAt(0);
+      currentPlayer.cards!.add(PlayableCards.buildFromValue(euler));
+      updateRoomAndPlayer(idRoom, currentPlayer, room);
+    } else {
+      //caso di pescare dal precedente
+      var players =
+          firestore.collection('rooms').doc(idRoom).collection('players');
+      QuerySnapshot playerInGame = await players.get();
+      int searchedOrder =
+          currentPlayer.order - 1 % maxPlayers; //ordine precedente
+      if (searchedOrder <= 0) searchedOrder = maxPlayers;
+      for (QueryDocumentSnapshot document in playerInGame.docs) {
+        if (document.id != 'ARB' &&
+            document.id != currentPlayer.getDocumentId()) {
+          Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+          Player otherPlayer = Player.fromFirestore(data);
+          if (otherPlayer.order == searchedOrder) {
+            List<PlayableCards> euCard = otherPlayer.cards!
+                .where((element) => element.type == 'E')
+                .toList();
+            if (euCard.isNotEmpty) {
+              currentPlayer.cards!.add(euCard.first);
+              otherPlayer.cards!.remove(euCard.first);
 
-    await players.doc(idPlayer).update({'cards': updatedPlayerCards});
+              await updatePlayer(idRoom, currentPlayer);
+              await updatePlayer(idRoom, otherPlayer);
+            }
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  //anche m.c.m
+  Future<void> effettoEulero(
+      String idRoom, Player currentPlayer, Room room) async {
+    String first = room.piatto.first;
+    room.piatto
+        .skip(1)
+        .map((e) => currentPlayer.cards!.add(PlayableCards.buildFromValue(e)))
+        .toList();
+    room.piatto.clear();
+    room.piatto.add(first);
+
+    await updateRoomAndPlayer(idRoom, currentPlayer, room);
   }
   //implementa calcolo punti
 }
