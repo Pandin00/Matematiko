@@ -73,7 +73,7 @@ class Player extends ChangeNotifier {
   }
 
   String getDocumentId() {
-    return id.split('§')[0];
+    return id.split('§').length > 1 ? id.split('§')[0] : 'ARB';
   }
 
   RulesValidationResult playCard(

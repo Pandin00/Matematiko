@@ -326,8 +326,8 @@ class _PlayingAreaWidgetState extends State<PlayingAreaWidget> {
                 if (widget._boardState.currentPlayer.playing) {
                   //aggiorna localmente e ritorna le azioni/errori
                   RulesValidationResult result =
-                      data.holder.playCard(data.card, selections, data.room);
-                  widget._boardState.applyEffects(result);
+                      data.holder.playCard(data.card, selections, widget._boardState.getCurrentRoom());
+                     widget._boardState.applyEffects(result);
                 }
                 //chiama board_start per eseguire gli effetti e le operazioni su db
                 Navigator.pop(context);

@@ -69,7 +69,7 @@ class PlayableCards {
   }
 
   String rendering() {
-    _log.info('$value - $type');
+    //_log.info('$value - $type');
     return carte[value]!;
   }
 

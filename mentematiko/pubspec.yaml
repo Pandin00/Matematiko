@@ -35,6 +35,9 @@ flutter:
 
   assets:
     - assets/images/
+    - assets/cards/
+    - assets/cards/CarteNumerike/
+    - assets/cards/EulerCards/
     - assets/music/
     - assets/dice/
     - assets/cards/

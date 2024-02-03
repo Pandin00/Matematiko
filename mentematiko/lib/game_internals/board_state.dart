@@ -43,10 +43,10 @@ class BoardState extends ChangeNotifier {
     matchService.getRoomTableInRealTime(idRoom).listen((event) {
       Map<String, dynamic> data = event.data()!; //suppongo ci sia!
       // ignore: prefer_conditional_assignment
-      if (_currentRoom == null) {
+      if (event.data() != null) {
         _currentRoom = Room.fromFirestore(data);
+        tableController.add(Room.fromFirestore(data));
       }
-      tableController.add(Room.fromFirestore(data));
     });
   }
 
@@ -63,57 +63,62 @@ class BoardState extends ChangeNotifier {
     });
   }
 
-  void applyEffects(RulesValidationResult validationResult) {
+  void applyEffects(RulesValidationResult validationResult) async {
     for (var entry in validationResult.validationMap.entries) {
       if (entry.value.verified == false) {
         _log.info("Multa su : ${entry.key}  ${entry.value.toString()} ");
-        matchService.applyMulta(idRoom, currentPlayer, _currentRoom!);
+        await matchService.applyMulta(idRoom, currentPlayer, _currentRoom!);
       } else {
         _log.info("Effetti su : ${entry.key}  ${entry.value.toString()} ");
-        _effects(entry);
+        await _effects(entry);
       }
     }
+    //servizio che per ogni player aggiorna i punti
   }
 
-  void _effects(MapEntry<String, Validation> entry) {
+  Future<void> _effects(MapEntry<String, Validation> entry) async {
     switch (entry.key) {
       case Rules.LISCIA:
-        matchService.updateRoomAndPlayer(idRoom, currentPlayer, _currentRoom!);
+        await matchService.updateRoomAndPlayer(
+            idRoom, currentPlayer, _currentRoom!);
         break;
       case Rules.SPECULARE:
-        matchService.speculare(idRoom, currentPlayer, _currentRoom!);
+        await matchService.speculare(idRoom, currentPlayer, _currentRoom!);
         break;
       case Rules.DIVISIBILE:
-        matchService.effettoDivisore(
+        await matchService.effettoDivisore(
             currentPlayer, _currentRoom!, idRoom, entry.value.result);
         break;
       case Rules.MULTIPLO:
-        matchService.effettoMultiplo(idRoom, currentPlayer, _currentRoom!);
+        await matchService.effettoMultiplo(
+            idRoom, currentPlayer, _currentRoom!);
         break;
       case Rules.PRIMO:
-        matchService.effettoPrimo(
+        await matchService.effettoPrimo(
             idRoom, currentPlayer, _currentRoom!, maxPlayers);
         break;
       case Rules.ZERO:
-        matchService.effettoZero(idRoom, _currentRoom!);
+        await matchService.effettoZero(idRoom, _currentRoom!);
         break;
       case Rules.EULER_DIVERSO:
-        matchService.effettoEulero(idRoom, currentPlayer, _currentRoom!);
+        await matchService.effettoEulero(idRoom, currentPlayer, _currentRoom!);
         break;
       case Rules.QUADRATO:
+        await matchService.effettoQuadrato(idRoom, currentPlayer, _currentRoom);
         break;
       case Rules.PERFETTO:
-        matchService.effettoNumeroPerfetto(
+        await matchService.effettoNumeroPerfetto(
             idRoom, currentPlayer, _currentRoom!, entry.value.result);
         break;
       case Rules.COMPLEMENTARE:
-        matchService.effettoComplementare(idRoom, currentPlayer, _currentRoom!);
+        await matchService.effettoComplementare(
+            idRoom, currentPlayer, _currentRoom!);
         break;
       case Rules.MCM:
-        matchService.effettoEulero(idRoom, currentPlayer, _currentRoom!);
+        await matchService.effettoEulero(idRoom, currentPlayer, _currentRoom!);
         break;
       case Rules.MCD:
-        matchService.effettoMcd(
+        await matchService.effettoMcd(
             idRoom, currentPlayer, _currentRoom!, maxPlayers);
         break;
     }
@@ -132,6 +137,6 @@ class BoardState extends ChangeNotifier {
 
   void changeTurn(String idRoom) {
     matchService.updateNextPlayerByCurrentPlayer(
-        idRoom, _currentRoom!.numberOfPlayers, currentPlayer);
+        idRoom, _currentRoom!.numberOfPlayers, currentPlayer, _currentRoom!);
   }
 }

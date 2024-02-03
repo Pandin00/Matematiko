@@ -111,7 +111,7 @@ class Rules {
         case ZERO:
           bool zero = isZero(playedCard.value, tavolo.piatto.first);
           if (zero && azioniAllaFineDelPopup.contains(ZERO)) {
-            validation.addValidation(PRIMO, Validation.withOnlyVerified(true));
+            validation.addValidation(ZERO, Validation.withOnlyVerified(true));
           } else if (zero && !azioniAllaFineDelPopup.contains(ZERO)) {
             validation.addValidation(ZERO, Validation.withOnlyVerified(false));
           } else if (!zero && azioniAllaFineDelPopup.contains(ZERO)) {
@@ -135,7 +135,7 @@ class Rules {
           bool square = isSquare(playedCard.value);
           if (square && azioniAllaFineDelPopup.contains(QUADRATO)) {
             validation.addValidation(QUADRATO,
-                Validation.withOnlyVerified(true)); //passa untouchable a true
+                Validation.withOnlyVerified(true)); //passa untouchable a 3
           } else if (square && !azioniAllaFineDelPopup.contains(QUADRATO)) {
             validation.addValidation(
                 QUADRATO, Validation.withOnlyVerified(false));
@@ -227,7 +227,7 @@ class Rules {
     int firstCardValue = int.parse(firstCard);
     int playedCardValue = int.parse(playedCard);
 
-    if (playedCardValue == 0) return false;
+    if (playedCardValue == 0 || firstCardValue == 0) return false;
 
     return firstCardValue % playedCardValue == 0;
   }
@@ -430,7 +430,8 @@ class Rules {
         isPrime(card) ||
         isSquare(card) ||
         complementare(firstCard, card) ||
-        isCube(card)) {
+        isCube(card) ||
+        isPerfectNumber(card)) {
       return false;
     }
 

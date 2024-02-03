@@ -131,7 +131,6 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
           ),
         );
       case 2:
-      case 1:
         return IgnorePointer(
           ignoring: _duringCelebration,
           child: Scaffold(

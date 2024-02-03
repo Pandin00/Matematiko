@@ -248,7 +248,7 @@ class MatchService {
       room.numericCards.add(int.parse(card.value));
 
       //update on firestore
-      updateRoomAndPlayer(idRoom, currentPlayer, room);
+      await updateRoomAndPlayer(idRoom, currentPlayer, room);
     }
   }
 
@@ -275,30 +275,33 @@ class MatchService {
     await roomDoc.update(room.toFirestore());
   }
 
-  void speculare(String idRoom, Player currentPlayer, Room room) async {
+  Future<void> speculare(String idRoom, Player currentPlayer, Room room) async {
     var players =
         firestore.collection('rooms').doc(idRoom).collection('players');
 
     QuerySnapshot playerInGame = await players.get();
-    int totalEntities = playerInGame.docs.length;
+    int totalEntities = playerInGame.docs.length-1; //levo l'arbitro
     int circularShift =
         (totalEntities - currentPlayer.order + 1) % totalEntities;
     var batch = firestore.batch();
     for (QueryDocumentSnapshot document in playerInGame.docs) {
-      var data = document.data() as Map<String, dynamic>;
-      int newOrder = ((data['order'] - circularShift - 1 + totalEntities) %
-              totalEntities) +
-          1;
-      batch.update(document.reference, {'order': newOrder});
+      if (document.id != 'ARB') {
+        var data = document.data() as Map<String, dynamic>;
+
+        int newOrder = ((data['order'] - circularShift - 1 + totalEntities) %
+                totalEntities) +
+            1;
+        batch.update(document.reference, {'order': newOrder});
+      }
     }
     batch.commit();
 
     //update on firestore
-    updateRoomAndPlayer(idRoom, currentPlayer, room);
+    await updateRoomAndPlayer(idRoom, currentPlayer, room);
   }
 
   Future<void> updateNextPlayerByCurrentPlayer(
-      String idRoom, int maxPlayers, Player current) async {
+      String idRoom, int maxPlayers, Player current, Room room) async {
     var players =
         firestore.collection('rooms').doc(idRoom).collection('players');
     String currentId = current.order == 0 ? 'ARB' : current.id.split('§')[0];
@@ -306,6 +309,9 @@ class MatchService {
     int next = current.order + 1;
     if (next > maxPlayers) {
       next = 1; //ARB è 0 e non gioca
+      //increase turno e decrease tutti quelli con untouchable
+      room.turno != room.turno! + 1;
+      await decreaseUntouchablesPlayers(idRoom);
     }
     //search next
     QuerySnapshot<Player> searchByOrder = await players
@@ -337,6 +343,26 @@ class MatchService {
         .collection('players')
         .doc(user.role == 'ARB' ? 'ARB' : user.email)
         .update(update);
+  }
+
+  Future<void> decreaseUntouchablesPlayers(String idRoom) async {
+    var players =
+        firestore.collection('rooms').doc(idRoom).collection('players');
+    QuerySnapshot<Player> unPlayers = await players
+        .where('untouchable', isGreaterThan: 0)
+        .withConverter(
+            fromFirestore: (snapshot, _) =>
+                Player.fromFirestore(snapshot.data()!),
+            toFirestore: (player, _) => {})
+        .get();
+    if (unPlayers.docs.isNotEmpty) {
+      for (var element in unPlayers.docs) {
+        Player p = element.data();
+        p.untouchable = p.untouchable! - 1;
+        _log.info("ridotto a ${p.getDocumentId()} ${p.untouchable}");
+        await updatePlayer(idRoom, p);
+      }
+    }
   }
 
   Future<void> distributeCards(String idRoom) async {
@@ -409,35 +435,30 @@ class MatchService {
   }
 
   Future<void> assignCardsFromPlate(
-      int n, String idPlayer, String idRoom) async {
-    var rooms = firestore.collection('rooms');
-    var players =
-        firestore.collection('rooms').doc(idRoom).collection('players');
-
-    // get room document
-    var roomDoc = await rooms.doc(idRoom).get();
-    var piatto = roomDoc['piatto'];
-
+      String idRoom, Player player, Room room, int n) async {
     // check if there are enough cards in the piatto
-    if (piatto.length >= n) {
+    if (room.piatto.length >= n) {
       // remove n cards from the piatto
-      List<dynamic> updatedPiattoCards = piatto.sublist(n);
-      await rooms.doc(idRoom).update({'piatto': updatedPiattoCards});
 
-      // add n cards to the player's hand
-      var playerDoc = await players.doc(idPlayer).get();
+      List<String> extract = room.piatto.sublist(1, n + 1);
+      List<PlayableCards> playable =
+          extract.map((e) => PlayableCards.buildFromValue(e)).toList();
+      player.cards!.addAll(playable); //aggiunti al player
 
-      List<dynamic> updatedPlayerCards = playerDoc['cards']!
-        ..addAll(piatto.sublist(0, n).map((e) => e.toString()).toList());
-
-      await players.doc(idPlayer).update({'cards': updatedPlayerCards});
+      room.piatto.removeRange(
+          room.piatto.length - 3, room.piatto.length); //rimossi dal piatto
     } else {
       // give all remaining cards to the player
-      await players
-          .doc(idPlayer)
-          .update({'cards': FieldValue.arrayUnion(piatto)});
-      await rooms.doc(idRoom).update({'piatto': []});
+      List<PlayableCards> cards = room.piatto
+          .skip(1)
+          .toList()
+          .map((e) => PlayableCards.buildFromValue(e))
+          .toList();
+      player.cards!.addAll(cards);
+      room.piatto
+          .removeRange(1, room.piatto.length); //eccetto appena quella giocata
     }
+    await updateRoomAndPlayer(idRoom, player, room);
   }
 
   Future<void> assignCardsFromRoom(
@@ -472,8 +493,10 @@ class MatchService {
         Map<String, dynamic> data = document.data() as Map<String, dynamic>;
         Player otherPlayer = Player.fromFirestore(data);
         if (myNexts.contains(otherPlayer.order)) {
-          //se il giocatore è ancora in gioco
-          if (otherPlayer.cards != null && otherPlayer.cards!.isNotEmpty) {
+          //se il giocatore è ancora in gioco e non ha l'effetto 7
+          if (otherPlayer.cards != null &&
+              otherPlayer.cards!.isNotEmpty &&
+              otherPlayer.untouchable == -1) {
             int extract = Random().nextInt(otherPlayer.cards!.length);
             PlayableCards lostCard = otherPlayer.cards!.removeAt(extract);
             currentPlayer.cards!.add(lostCard);
@@ -509,7 +532,7 @@ class MatchService {
     }
     //remove piatto
     room.piatto.clear();
-    room.piatto.add("1");
+    room.piatto.add("0");
 
     //shuffle
     _shuffleArray(room.euleroCards);
@@ -517,15 +540,15 @@ class MatchService {
 
     _log.info(
         "Effetto zero end piatto: ${room.piatto.length}  numeriche: ${room.numericCards.length} eulero: numeriche: ${room.euleroCards.length}");
-    updateRoom(idRoom, room);
+    await updateRoom(idRoom, room);
   }
 
   List<int> getMyNextOrders(Player currentPlayer, int maxPlayers) {
     int currentOrder = currentPlayer.order;
     List<int> myNext = List.empty(growable: true);
-    myNext.add(currentOrder + 1 % maxPlayers);
-    myNext.add(currentOrder + 2 % maxPlayers);
-    myNext.add(currentOrder + 3 % maxPlayers);
+    myNext.add((currentOrder + 1) % maxPlayers);
+    myNext.add((currentOrder + 2) % maxPlayers);
+    myNext.add((currentOrder + 3) % maxPlayers);
 
     myNext = myNext.map((value) => value == 0 ? 1 : value).toList();
     return myNext;
@@ -539,17 +562,7 @@ class MatchService {
   Future<void> effettoDivisore(
       Player currentPlayer, Room room, String idRoom, int q) async {
     _log.info("Divisibile i get cards $q from table");
-    await assignCardsFromPlate(q, currentPlayer.getDocumentId(), idRoom);
-    await updateRoomAndPlayer(idRoom, currentPlayer, room);
-  }
-
-  //uguale per 6 e 11
-  effettoZeroMcm(String lastCardValue, String playedCardValue, String idPlayer,
-      String idRoom) async {
-    var rooms = firestore.collection('rooms');
-    var roomDoc = await rooms.doc(idRoom).get();
-    var piatto = roomDoc['piatto'];
-    assignCardsFromPlate(piatto.length, idPlayer, idRoom);
+    await assignCardsFromPlate(idRoom, currentPlayer, room, q);
   }
 
   Future<void> effettoNumeroPerfetto(
@@ -578,7 +591,7 @@ class MatchService {
     await updatePlayer(idRoom, currentPlayer);
   }
 
-  void effettoMcd(
+  Future<void> effettoMcd(
       String idRoom, Player currentPlayer, Room room, int maxPlayers) async {
     if (room.euleroCards.isNotEmpty) {
       String euler = room.euleroCards.removeAt(0);
@@ -630,8 +643,9 @@ class MatchService {
   }
 
   //implementa calcolo punti
-  Future<int> calcolatePoints( String idPlayer, String idRoom ) async {
-    var players = firestore.collection('rooms').doc(idRoom).collection('players');
+  Future<int> calcolatePoints(String idPlayer, String idRoom) async {
+    var players =
+        firestore.collection('rooms').doc(idRoom).collection('players');
     var playerDoc = await players.doc(idPlayer).get();
 
     List<dynamic> updatedPlayerCards = playerDoc['cards'];
@@ -644,63 +658,167 @@ class MatchService {
         case 'i':
         case 'pi':
         case '0':
-        case '1': points += 1000; break;
-        case '2': points += 800; break;
-        case '3': points += 700; break;
-        case '4': points += 100; break;
-        case '5': points += 500; break;
-        case '6': points += 10; break;
-        case '7': points += 300; break;
-        case '8': points += 30; break;
-        case '9': points += 100; break;
-        case '10': points += 10; break;
-        case '11': points += 250; break;
-        case '12': points += 20; break;
-        case '13': points += 250; break;
-        case '14': points += 10; break;
-        case '15': points += 10; break;
-        case '16': points += 100; break;
-        case '17': points += 250; break;
-        case '18': points += 10; break;
-        case '19': points += 250; break;
-        case '20': points += 20; break;
-        case '21': points += 10; break;
-        case '22': points += 10; break;
-        case '23': points += 225; break;
-        case '24': points += 30; break;
-        case '25': points += 100; break;
-        case '26': points += 10; break;
-        case '27': points += 10; break;
-        case '28': points += 20; break;
-        case '29': points += 225; break;
-        case '30': points += 10; break;
-        case '31': points += 200; break;
-        case '32': points += 50; break;
-        case '33': points += 10; break;
-        case '34': points += 10; break;
-        case '35': points += 20; break;
-        case '36': points += 100; break;
-        case '37': points += 200; break;
-        case '38': points += 10; break;
-        case '39': points += 10; break;
-        case '40': points += 30; break;
-        case '41': points += 175; break;
-        case '42': points += 10; break;
-        case '43': points += 175; break;
-        case '44': points += 20; break;
-        case '45': points += 10; break;
-        case '46': points += 10; break;
-        case '47': points += 175; break;
-        case '48': points += 40; break;
-        case '49': points += 100; break;
-        case '50': points += 10; break;
+        case '1':
+          points += 1000;
+          break;
+        case '2':
+          points += 800;
+          break;
+        case '3':
+          points += 700;
+          break;
+        case '4':
+          points += 100;
+          break;
+        case '5':
+          points += 500;
+          break;
+        case '6':
+          points += 10;
+          break;
+        case '7':
+          points += 300;
+          break;
+        case '8':
+          points += 30;
+          break;
+        case '9':
+          points += 100;
+          break;
+        case '10':
+          points += 10;
+          break;
+        case '11':
+          points += 250;
+          break;
+        case '12':
+          points += 20;
+          break;
+        case '13':
+          points += 250;
+          break;
+        case '14':
+          points += 10;
+          break;
+        case '15':
+          points += 10;
+          break;
+        case '16':
+          points += 100;
+          break;
+        case '17':
+          points += 250;
+          break;
+        case '18':
+          points += 10;
+          break;
+        case '19':
+          points += 250;
+          break;
+        case '20':
+          points += 20;
+          break;
+        case '21':
+          points += 10;
+          break;
+        case '22':
+          points += 10;
+          break;
+        case '23':
+          points += 225;
+          break;
+        case '24':
+          points += 30;
+          break;
+        case '25':
+          points += 100;
+          break;
+        case '26':
+          points += 10;
+          break;
+        case '27':
+          points += 10;
+          break;
+        case '28':
+          points += 20;
+          break;
+        case '29':
+          points += 225;
+          break;
+        case '30':
+          points += 10;
+          break;
+        case '31':
+          points += 200;
+          break;
+        case '32':
+          points += 50;
+          break;
+        case '33':
+          points += 10;
+          break;
+        case '34':
+          points += 10;
+          break;
+        case '35':
+          points += 20;
+          break;
+        case '36':
+          points += 100;
+          break;
+        case '37':
+          points += 200;
+          break;
+        case '38':
+          points += 10;
+          break;
+        case '39':
+          points += 10;
+          break;
+        case '40':
+          points += 30;
+          break;
+        case '41':
+          points += 175;
+          break;
+        case '42':
+          points += 10;
+          break;
+        case '43':
+          points += 175;
+          break;
+        case '44':
+          points += 20;
+          break;
+        case '45':
+          points += 10;
+          break;
+        case '46':
+          points += 10;
+          break;
+        case '47':
+          points += 175;
+          break;
+        case '48':
+          points += 40;
+          break;
+        case '49':
+          points += 100;
+          break;
+        case '50':
+          points += 10;
+          break;
       }
     }
 
     return points;
-
   }
 
+  Future<void> effettoQuadrato(
+      String idRoom, Player currentPlayer, Room? currentRoom) async {
+    currentPlayer.untouchable = 3;
+    await updateRoomAndPlayer(idRoom, currentPlayer, currentRoom!);
+  }
 }
 
 //classi di comodo
