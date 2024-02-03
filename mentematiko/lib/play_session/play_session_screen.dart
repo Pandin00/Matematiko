@@ -13,8 +13,6 @@ import 'package:card/settings/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart' hide Level;
 import 'package:provider/provider.dart';
-import '../audio/audio_controller.dart';
-import '../audio/sounds.dart';
 import '../game_internals/board_state.dart';
 import '../style/palette.dart';
 import 'board_widget.dart';
@@ -368,9 +366,6 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
     setState(() {
       _duringCelebration = true;
     });
-
-    final audioController = context.read<AudioController>();
-    audioController.playSfx(SfxType.congrats);
 
     /// Give the player some time to see the celebration animation.
     await Future<void>.delayed(_celebrationDuration);

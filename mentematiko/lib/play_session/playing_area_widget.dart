@@ -9,8 +9,6 @@ import 'package:card/services/rules_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../audio/audio_controller.dart';
-import '../audio/sounds.dart';
 import '../style/palette.dart';
 import 'playing_card_widget.dart';
 
@@ -79,9 +77,6 @@ class _PlayingAreaWidgetState extends State<PlayingAreaWidget> {
 
   void _onAreaTap() {
     showPlateCard(context, tableCards!);
-    final audioController = context.read<AudioController>();
-    //TODO cambiare con un suono migliore
-    audioController.playSfx(SfxType.huhsh);
   }
 
   void _onDragAccept(PlayingCardDragData data) {
