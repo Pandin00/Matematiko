@@ -7,6 +7,7 @@ import 'package:card/main_menu/register.dart';
 import 'package:card/models/player.dart';
 import 'package:card/models/user.dart';
 import 'package:card/play_session/play_session_screen.dart';
+import 'package:card/play_session/win_game_page.dart';
 import 'package:card/services/login_register_service.dart';
 import 'package:card/services/match_service.dart';
 import 'package:card/settings/settings.dart';
@@ -109,6 +110,16 @@ final router = GoRouter(
                   key: ValueKey('usersView'),
                   color: context.watch<Palette>().backgroundPlaySession,
                   child: UsersPage(),
+                )),
+        GoRoute(
+            path: 'win',
+            pageBuilder: (context, state) => buildMyTransition<void>(
+                  key: ValueKey('win'),
+                  color: context.watch<Palette>().backgroundPlaySession,
+                  child: WinPage(
+                    key: Key('win'),
+                    player: state.extra as Player,
+                  ),
                 )),
         GoRoute(
             path: 'play',
