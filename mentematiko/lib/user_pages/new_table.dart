@@ -88,6 +88,7 @@ class _CreateNewTablePageState extends State<CreateNewTablePage> {
                 ),
               ],
             ),
+            SizedBox(height: 20),
             Row(
               children: [
                 Text('Max Turni:'),
