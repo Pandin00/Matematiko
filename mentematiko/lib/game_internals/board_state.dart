@@ -38,11 +38,14 @@ class BoardState extends ChangeNotifier {
       required this.maxPlayers,
       required this.turni});
 
-  Room getCurrentRoom() {
-    return _currentRoom!; // da rivedere
+  Room? getCurrentRoom() {
+    return _currentRoom;
   }
 
-  void listeningOnTable(String idRoom) {
+  void listeningOnTable(String idRoom) async {
+    _currentRoom =
+        await matchService.getRoomById(idRoom); //non può mai essere null
+    _log.info("get current room $_currentRoom");
     matchService.getRoomTableInRealTime(idRoom).listen((event) {
       Map<String, dynamic> data = event.data()!; //suppongo ci sia!
       // ignore: prefer_conditional_assignment
@@ -139,7 +142,9 @@ class BoardState extends ChangeNotifier {
     }
   }
 
+  @override
   void dispose() {
+    super.dispose();
     tableController.close();
   }
 

@@ -28,36 +28,40 @@ class _OpponentWidgetState extends State<OpponentWidget> {
     _loadPlayerData();
   }
 
-  void _loadPlayerData() {
-    widget.matchService
-        .searchByOrder(widget.idRoom, widget.order)
-        .then((value) => {
-              setState(() {
-                player = value!;
-              })
-            });
+  Future<void> _loadPlayerData() async {
+    Player? p =
+        await widget.matchService.searchByOrder(widget.idRoom, widget.order);
+    if (p != null) {
+      setState(() {
+        player = p;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        CircleAvatar(
-          // Use player data here, for example, player.profilePic
-          backgroundImage: AssetImage('assets/profile_pic.jpg'),
-        ),
-        const SizedBox(
-            width: 16), // Aggiunge uno spazio tra il cerchio e il testo
-        Text('Opponent Name: ${player!.id.split("§")[1]}'),
-        ElevatedButton(
-          onPressed: () {
-            _loadPlayerData();
-            showCard(context, player!.cards!);
-          },
-          child: Text('Show cards'),
-        ),
-      ],
-    );
+    if (player == null) {
+      return Column(children: const [CircularProgressIndicator()]);
+    } else {
+      return Column(
+        children: [
+          CircleAvatar(
+            // Use player data here, for example, player.profilePic
+            backgroundImage: AssetImage('assets/images/user.png'),
+          ),
+          const SizedBox(
+              width: 16), // Aggiunge uno spazio tra il cerchio e il testo
+          Text('Opponent Name: ${player!.id.split("§")[1]}'),
+          ElevatedButton(
+            onPressed: () {
+              _loadPlayerData();
+              showCard(context, player!.cards!);
+            },
+            child: Text('Show cards'),
+          ),
+        ],
+      );
+    }
   }
 
   void showCard(BuildContext context, List<PlayableCards> cards) {
@@ -77,7 +81,7 @@ class _OpponentWidgetState extends State<OpponentWidget> {
                   for (int j = 0; j < numCardsPerRow; j++)
                     if (i * numCardsPerRow + j < cards.length)
                       Container(
-                        child: Image.network(
+                        child: Image.asset(
                           cards[i * numCardsPerRow + j].rendering(),
                           height: 110,
                           width: 100,

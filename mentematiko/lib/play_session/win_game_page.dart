@@ -39,7 +39,7 @@ class _WinPageState extends State<WinPage> {
           DecoratedBox(
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: AssetImage('images/coppa.png'),
+                image: AssetImage('assets/images/coppa.png'),
                 fit: BoxFit.cover,
               ),
             ),

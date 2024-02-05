@@ -116,11 +116,7 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                         ],
                       ),
                     ),
-                    Container(
-                      height: 100,
-                      width: 100,
-                      child: DiceWidget(),
-                    ),
+                    
                     IgnorePointer(
                       // quando il tempo arriva a 0 la mano non è cliccabile
                       ignoring: _timerExpired,
@@ -171,11 +167,7 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                     Center(
                       child: BoardWidget(boardState: _boardState),
                     ),
-                    Container(
-                      height: 100,
-                      width: 100,
-                      child: DiceWidget(),
-                    ),
+                    
                     IgnorePointer(
                       // quando il tempo arriva a 0 la mano non è cliccabile
                       ignoring: _timerExpired,
@@ -231,11 +223,7 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                       flex: 1,
                       child: BoardWidget(boardState: _boardState),
                     ),
-                    Container(
-                      height: 100,
-                      width: 100,
-                      child: DiceWidget(),
-                    ),
+                    
                     IgnorePointer(
                       // quando il tempo arriva a 0 la mano non è cliccabile
                       ignoring: _timerExpired,
@@ -292,11 +280,7 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                       ),
                     ),
                     BoardWidget(boardState: _boardState),
-                    Container(
-                      height: 100,
-                      width: 100,
-                      child: DiceWidget(),
-                    ),
+                    
                     SizedBox(height: 10),
                     IgnorePointer(
                       // quando il tempo arriva a 0 la mano non è cliccabile
@@ -326,7 +310,7 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
     numberOfPlayers = widget.sharedController.getMaxPlayer();
     idRoom = widget.sharedController.getRoomId();
     time = widget.sharedController.getTimePerTurn();
-    turni = widget.sharedController.getTimePerTurn();
+    turni = widget.sharedController.getTurni();
 
     //calculate orders for opponent
     for (int i = 0; i < numberOfPlayers; ++i) {

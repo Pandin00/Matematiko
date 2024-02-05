@@ -114,7 +114,7 @@ class MatchService {
             .doc(user.email)
             .set(p.toFirestore());
         return JoinedItem(querySnapshot.docs.first.id.toString(),
-            currentRoom.numberOfPlayers, currentRoom.time);
+            currentRoom.numberOfPlayers, currentRoom.time,currentRoom.maxTurni);
       } else {
         return JoinedItem.fromError("FULL");
       }
@@ -727,15 +727,18 @@ class MatchService {
         }
         //check vittoria eulero
         if (p.haveEuleroCombo()) {
+          _log.info("Winning condition per eulero ${p.id}");
           room.turno = -100;
           break;
         }
       }
     }
-    if (room.turno == maxTurni) {
+    if (room.turno! > maxTurni) {
+      _log.info("Winning per turni ${room.turno}");
       room.turno = -100;
     }
     if (numberDead == maxPlayers - 1) {
+      _log.info("Winning condition per death match");
       room.turno = -100; //segno che c'è un vincitore death match
     }
 
@@ -755,6 +758,16 @@ class MatchService {
         .get();
     return winner.docs.first.data();
   }
+
+  Future<Room?> getRoomById(String idRoom) async {
+      var room = await
+        firestore.collection('rooms').doc(idRoom).get();
+
+    if(room.exists){
+       return Room.fromFirestore(room.data()!);
+    }
+    return null;
+  }
 }
 
 //classi di comodo
@@ -762,9 +775,10 @@ class JoinedItem {
   String? roomId;
   int? time;
   int? maxPlayers;
+  int? maxTurni;
   String? errorCode;
 
-  JoinedItem(this.roomId, this.maxPlayers, this.time) {
+  JoinedItem(this.roomId, this.maxPlayers, this.time, this.maxTurni) {
     errorCode = '';
   }
 

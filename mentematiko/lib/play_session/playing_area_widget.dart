@@ -322,7 +322,7 @@ class _PlayingAreaWidgetState extends State<PlayingAreaWidget> {
                 if (widget._boardState.currentPlayer.playing) {
                   //aggiorna localmente e ritorna le azioni/errori
                   RulesValidationResult result = data.holder.playCard(data.card,
-                      selections, widget._boardState.getCurrentRoom());
+                      selections, widget._boardState.getCurrentRoom()!);
                   widget._boardState.applyEffects(result);
                 }
                 //chiama board_start per eseguire gli effetti e le operazioni su db
@@ -375,7 +375,7 @@ class _PlayingAreaWidgetState extends State<PlayingAreaWidget> {
                   for (int j = 0; j < numCardsPerRow; j++)
                     if (i * numCardsPerRow + j < cards.length)
                       Container(
-                        child: Image.network(
+                        child: Image.asset(
                           cards[i * numCardsPerRow + j].rendering(),
                           height: 110,
                           width: 100,
