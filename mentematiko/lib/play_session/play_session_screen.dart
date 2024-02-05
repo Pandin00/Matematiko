@@ -11,6 +11,7 @@ import 'package:card/play_session/player_hand_widget.dart';
 import 'package:card/services/match_service.dart';
 import 'package:card/settings/settings.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:logging/logging.dart' hide Level;
 import 'package:provider/provider.dart';
 import '../game_internals/board_state.dart';
@@ -41,6 +42,7 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
   int numberOfPlayers = 2;
   String? idRoom;
   late int time;
+  late int turni;
 
   static const _celebrationDuration = Duration(milliseconds: 2000);
 
@@ -54,6 +56,8 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
   late bool _timerExpired;
 
   List<int> orders = List.empty(growable: true);
+
+  CountdownTimer? timer;
 
   @override
   Widget build(BuildContext context) {
@@ -320,8 +324,10 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
   void initState() {
     super.initState();
     numberOfPlayers = widget.sharedController.getMaxPlayer();
-    idRoom = widget.sharedController.getRoomCode();
+    idRoom = widget.sharedController.getRoomId();
     time = widget.sharedController.getTimePerTurn();
+    turni = widget.sharedController.getTimePerTurn();
+
     //calculate orders for opponent
     for (int i = 0; i < numberOfPlayers; ++i) {
       orders.add(i + 1);
@@ -334,10 +340,11 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
         matchService: widget.matchService,
         currentPlayer: widget.currentPlayer!,
         idRoom: idRoom!,
-        maxPlayers: numberOfPlayers);
+        maxPlayers: numberOfPlayers,
+        turni: turni);
     _boardState.listeningOnTable(idRoom!);
     _boardState.listeningOnCurrentPlayer(idRoom!);
-    _timerExpired=!_boardState.currentPlayer.playing;
+    _timerExpired = !_boardState.currentPlayer.playing;
   }
 
   void timerExpired(bool value) {
@@ -351,27 +358,12 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
     }
   }
 
-  Future<void> _playerWon() async {
+  void _playerWon() {
     _log.info('Player won');
-
-    // TODO: replace with some meaningful score for the card game
-
-    // final playerProgress = context.read<PlayerProgress>();
-    // playerProgress.setLevelReached(widget.level.number);
-
-    // Let the player see the game just after winning for a bit.
-    await Future<void>.delayed(_preCelebrationDuration);
-    if (!mounted) return;
-
-    setState(() {
-      _duringCelebration = true;
-    });
-
-    /// Give the player some time to see the celebration animation.
-    await Future<void>.delayed(_celebrationDuration);
-    if (!mounted) return;
-
-    //GoRouter.of(context).go('/play/won', extra: {'score': score});
+    _boardState.getWinnerPlayer().then((value) => 
+     GoRouter.of(context).go('/win', extra: value)
+    );
+   
   }
 
   static SizedBox getGapHeight(BuildContext context) {
@@ -422,7 +414,7 @@ class _CountdownTimerState extends State<CountdownTimer> {
   }
 
   void restartTimer() {
-    //_timer?.cancel(); // Cancella il timer esistente
+   // _timer?.cancel(); // Cancella il timer esistente
     _timerExpired = false;
     _remainingTime = widget.duration * 60; // Reimposta il tempo rimanente
     //_startTimer(); // Avvia il nuovo timer
@@ -432,6 +424,11 @@ class _CountdownTimerState extends State<CountdownTimer> {
     _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
       setState(() {
         if (widget.currentPlayer.playing) {
+          if (widget.currentPlayer.cards!.isEmpty) {
+            _timerExpired=true;
+            widget.onTimerExpired(_timerExpired);
+            return ;
+          }
           widget.onTimerExpired(_timerExpired);
           if (_remainingTime > 0) {
             _remainingTime -= 3;
@@ -440,6 +437,10 @@ class _CountdownTimerState extends State<CountdownTimer> {
             widget.onTimerExpired(_timerExpired);
             restartTimer();
           }
+        }else{ //vuol dire che ho giocato
+           _timerExpired = true;
+            widget.onTimerExpired(_timerExpired);
+            restartTimer();
         }
       });
     });

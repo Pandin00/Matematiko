@@ -145,7 +145,7 @@ class _LobbyPageState extends State<LobbyPage> {
   @override
   void initState() {
     super.initState();
-    idRoom = widget.sharedController.getRoomCode();
+    idRoom = widget.sharedController.getRoomId();
     playerSize = widget.sharedController.getMaxPlayer();
   }
 

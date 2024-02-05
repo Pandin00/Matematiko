@@ -28,6 +28,7 @@ class CreateNewTablePage extends StatefulWidget {
 class _CreateNewTablePageState extends State<CreateNewTablePage> {
   final TextEditingController playersController = TextEditingController();
   int _selectedMinutes = 1;
+  int _maxTurni=5;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
@@ -87,6 +88,28 @@ class _CreateNewTablePageState extends State<CreateNewTablePage> {
                 ),
               ],
             ),
+            Row(
+              children: [
+                Text('Max Turni:'),
+                SizedBox(width: 10),
+                Expanded(
+                  child: TextField(
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      LengthLimitingTextInputFormatter(2),
+                    ],
+                    onChanged: (value) {
+                      _maxTurni = int.tryParse(value) ?? 5;
+                    },
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'Enter ',
+                    ),
+                  ),
+                ),
+              ],
+            ),
             SizedBox(height: 20),
             Padding(
               padding: EdgeInsets.symmetric(vertical: 16.0),
@@ -109,10 +132,14 @@ class _CreateNewTablePageState extends State<CreateNewTablePage> {
                     );
                     return;
                   }
-                  RoomCreation r = RoomCreation(players: players, minutes: _selectedMinutes);
+                  RoomCreation r = RoomCreation(players: players, minutes: _selectedMinutes,maxTurni: _maxTurni);
                   context
                       .read<SettingsController>()
                       .setTimePerTurn(_selectedMinutes);
+                 context
+                      .read<SettingsController>()
+                      .setTurni(_maxTurni);
+                      
 
                   widget.matchService
                       .createRoom(r, widget.user)
@@ -121,7 +148,7 @@ class _CreateNewTablePageState extends State<CreateNewTablePage> {
                               {
                                 context
                                     .read<SettingsController>()
-                                    .setRoomCode(value[0]),
+                                    .setRoomId(value[0]),
                                 context
                                     .read<SettingsController>()
                                     .setMaxPlayer(r.players),

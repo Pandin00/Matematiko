@@ -14,6 +14,7 @@ class Room {
 
   String log=''; //log giocate e notifiche
   int? turno = 1;
+  int? maxTurni=5;
 
 //log
 
@@ -26,7 +27,8 @@ class Room {
       required this.nerdCards,
       required this.euleroCards,
       required this.piatto,
-      required this.log
+      required this.log,
+      this.maxTurni
       });
 
 
@@ -42,7 +44,8 @@ class Room {
       'eulero_card': euleroCards,
       'piatto': piatto,
       'log': log,
-      'turno': turno
+      'turno': turno,
+      'maxTurni': maxTurni
     };
   }
 
@@ -57,6 +60,7 @@ class Room {
         piatto: data['piatto'] != null ? _convertString(data['piatto']) : List.empty(),
         log: data['log'] ?? '',
         turno: data['turno']?? 1,
+        maxTurni: data['maxTurni'] ?? 5
     );
   }
 

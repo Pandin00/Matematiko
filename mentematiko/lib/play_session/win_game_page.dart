@@ -51,7 +51,7 @@ class _WinPageState extends State<WinPage> {
           SizedBox(height: 16.0),
           Center(
             child: Text(
-              '${widget.player.id} ha vinto con ${widget.player.point} punti',
+              '${widget.player.id.split("§")[1]} ha vinto con ${widget.player.point} punti',
               style: TextStyle(fontSize: 24.0),
             ),
           ),

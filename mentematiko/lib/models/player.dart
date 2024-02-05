@@ -76,6 +76,177 @@ class Player extends ChangeNotifier {
     return id.split('§').length > 1 ? id.split('§')[0] : 'ARB';
   }
 
+  bool haveEuleroCombo() {
+    List<String> eu = ['pi', '1', '0', 'i', 'e'];
+    List<String> cardLocal = cards!.map((e) => e.toString()).toList();
+    return eu.every((element) => cardLocal.contains(element));
+  }
+
+  void calculatePoints() {
+    int points = 0;
+    if (cards != null && cards!.isNotEmpty) {
+      for (var element in cards!) {
+        switch (element.value) {
+          case 'e':
+          case 'i':
+          case 'pi':
+          case '0':
+          case '1':
+            points += 1000;
+            break;
+          case '2':
+            points += 800;
+            break;
+          case '3':
+            points += 700;
+            break;
+          case '4':
+            points += 100;
+            break;
+          case '5':
+            points += 500;
+            break;
+          case '6':
+            points += 10;
+            break;
+          case '7':
+            points += 300;
+            break;
+          case '8':
+            points += 30;
+            break;
+          case '9':
+            points += 100;
+            break;
+          case '10':
+            points += 10;
+            break;
+          case '11':
+            points += 250;
+            break;
+          case '12':
+            points += 20;
+            break;
+          case '13':
+            points += 250;
+            break;
+          case '14':
+            points += 10;
+            break;
+          case '15':
+            points += 10;
+            break;
+          case '16':
+            points += 100;
+            break;
+          case '17':
+            points += 250;
+            break;
+          case '18':
+            points += 10;
+            break;
+          case '19':
+            points += 250;
+            break;
+          case '20':
+            points += 20;
+            break;
+          case '21':
+            points += 10;
+            break;
+          case '22':
+            points += 10;
+            break;
+          case '23':
+            points += 225;
+            break;
+          case '24':
+            points += 30;
+            break;
+          case '25':
+            points += 100;
+            break;
+          case '26':
+            points += 10;
+            break;
+          case '27':
+            points += 10;
+            break;
+          case '28':
+            points += 20;
+            break;
+          case '29':
+            points += 225;
+            break;
+          case '30':
+            points += 10;
+            break;
+          case '31':
+            points += 200;
+            break;
+          case '32':
+            points += 50;
+            break;
+          case '33':
+            points += 10;
+            break;
+          case '34':
+            points += 10;
+            break;
+          case '35':
+            points += 20;
+            break;
+          case '36':
+            points += 100;
+            break;
+          case '37':
+            points += 200;
+            break;
+          case '38':
+            points += 10;
+            break;
+          case '39':
+            points += 10;
+            break;
+          case '40':
+            points += 30;
+            break;
+          case '41':
+            points += 175;
+            break;
+          case '42':
+            points += 10;
+            break;
+          case '43':
+            points += 175;
+            break;
+          case '44':
+            points += 20;
+            break;
+          case '45':
+            points += 10;
+            break;
+          case '46':
+            points += 10;
+            break;
+          case '47':
+            points += 175;
+            break;
+          case '48':
+            points += 40;
+            break;
+          case '49':
+            points += 100;
+            break;
+          case '50':
+            points += 10;
+            break;
+        }
+        point = points;
+      }
+    }
+  }
+
   RulesValidationResult playCard(
       PlayableCards played, List<String> choice, Room room) {
     PlayableCards? deck = cards?.firstWhere((element) => element == played,

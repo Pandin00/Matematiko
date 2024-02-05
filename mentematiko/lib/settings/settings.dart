@@ -43,27 +43,36 @@ class SettingsController {
   SettingsController({SettingsPersistence? store})
       : _store = store ?? LocalStorageSettingsPersistence();
 
-  String getRoomCode() {
+  String getRoomId() {
     return _store.getLastRoomCode();
   }
 
-  void setRoomCode(String code) {
+  void setRoomId(String code) {
     _store.setLastRoomCode(code);
   }
 
-  int getMaxPlayer(){
+  int getMaxPlayer() {
     return _store.getMaxPlayer();
   }
 
-  void setMaxPlayer(int max){
+  void setMaxPlayer(int max) {
     return _store.setMaxPlayer(max);
   }
 
-  void setTimePerTurn(int time){
+  void setTimePerTurn(int time) {
     return _store.setTimePerTurn(time);
   }
 
-  int getTimePerTurn(){
+  int getTimePerTurn() {
     return _store.getTimePerTurn();
+  }
+
+//n-max di turni
+  void setTurni(int turni) {
+    return _store.setMaxTurni(turni);
+  }
+
+  int getTurni() {
+    return _store.getMaxTurni();
   }
 }

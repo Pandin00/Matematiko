@@ -51,6 +51,18 @@ class LocalStorageSettingsPersistence extends SettingsPersistence {
    final prefs = instance;
     await prefs?.setInt('time', time);
   }
+  
+  @override
+  int getMaxTurni() {
+   final prefs = instance;
+    return prefs?.getInt('turni') ?? 5;
+  }
+  
+  @override
+  void setMaxTurni(int turni) async {
+    final prefs = instance;
+    await prefs?.setInt('turni', turni);
+  }
 
 
 }
