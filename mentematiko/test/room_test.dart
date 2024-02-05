@@ -24,7 +24,7 @@ group('Room Services', () {
       User p1=User(email: "p1",nome: "p1",cf: "fake",regione: "reg",provincia: "pro",istituto: "ff",role: "USR",password: "p");
       //User p2=User(email: "p2",nome: "p2",cf: "fake",regione: "reg",provincia: "pro",istituto: "ff",role: "USR",password: "p");
 
-      List<String> result= await match.createRoom(RoomCreation(players: 2, minutes: 10), arb);
+      List<String> result= await match.createRoom(RoomCreation(players: 2, minutes: 10,maxTurni: 10), arb);
       await match.joinInGame(result[1], p1);
       //await match.joinInGame(result[1], p2);
 

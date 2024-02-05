@@ -217,6 +217,10 @@ class Rules {
     }
     //aggiunge la carta giocata al piatto come last-card
     tavolo.piatto.insert(0, playedCard.value);
+    if(currentPlayer.random!=-1){
+      //remove curse after played
+      currentPlayer.random=-1;
+    }
     return validation;
   }
 

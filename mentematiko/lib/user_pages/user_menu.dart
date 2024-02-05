@@ -62,9 +62,10 @@ class ArbUserMenu extends StatelessWidget {
               if (code != null) {
                 matchService.joinInGame(code, user).then((value) => {
                       if (value.errorCode != 'NOT_FOUND' && value.errorCode!='FULL'){
-                        context.read<SettingsController>().setRoomCode(value.roomId?? ''),
+                        context.read<SettingsController>().setRoomId(value.roomId?? ''),
                         context.read<SettingsController>().setMaxPlayer(value.maxPlayers?? -1),
                         context.read<SettingsController>().setTimePerTurn(value.time?? 1),
+                        context.read<SettingsController>().setTurni(value.maxTurni ?? 5),
                         GoRouter.of(context).go('/lobby', extra: user)
                       }
                       else{
@@ -103,7 +104,7 @@ class NormalUserMenu extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           CircleAvatar(
-            backgroundImage: NetworkImage('https://example.com/image.jpg'),
+            backgroundImage: AssetImage('assets/images/user.png'),
             radius: 50,
           ),
           Text(user?.email ?? 'wrong data'),
@@ -119,9 +120,10 @@ class NormalUserMenu extends StatelessWidget {
               if (code != null) {
                 matchService.joinInGame(code, user).then((value) => {
                       if (value.errorCode != 'NOT_FOUND' && value.errorCode!='FULL'){
-                        context.read<SettingsController>().setRoomCode(value.roomId?? ''),
+                        context.read<SettingsController>().setRoomId(value.roomId?? ''),
                         context.read<SettingsController>().setMaxPlayer(value.maxPlayers?? -1),
                         context.read<SettingsController>().setTimePerTurn(value.time?? 1),
+                        context.read<SettingsController>().setTurni(value.maxTurni ?? 5),
                         GoRouter.of(context).go('/lobby', extra: user)
                       }
                       else{
@@ -134,13 +136,7 @@ class NormalUserMenu extends StatelessWidget {
               }
             },
             child: Text('Entra in partita'),
-          ),
-          MyButton(
-            onPressed: () {
-              GoRouter.of(context).go('/userMenu/tournamentsView');
-            },
-            child: Text('Guarda Classifica'),
-          ),
+          )
         ],
       ),
     );

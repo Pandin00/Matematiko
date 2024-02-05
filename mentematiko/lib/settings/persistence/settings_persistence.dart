@@ -19,4 +19,7 @@ abstract class SettingsPersistence {
 
   void setTimePerTurn(int time);
   int getTimePerTurn();
+
+  void setMaxTurni(int turni);
+  int getMaxTurni();
 }

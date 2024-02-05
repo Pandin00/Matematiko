@@ -15,6 +15,8 @@ class BoardState extends ChangeNotifier {
   Room? _currentRoom;
   String idRoom;
   int maxPlayers;
+  int turni; //max numero di turni
+  final int _WIN = -100;
 
   final StreamController<Room> tableController =
       StreamController<Room>.broadcast(); //tavolo
@@ -26,26 +28,33 @@ class BoardState extends ChangeNotifier {
   final MatchService matchService;
   Player currentPlayer;
 
+  //Player? winner;
+
   BoardState(
       {required this.onWin,
       required this.matchService,
       required this.currentPlayer,
       required this.idRoom,
-      required this.maxPlayers}) {
-    currentPlayer.addListener(_handlePlayed);
+      required this.maxPlayers,
+      required this.turni});
+
+  Room? getCurrentRoom() {
+    return _currentRoom;
   }
 
-  Room getCurrentRoom() {
-    return _currentRoom!; // da rivedere
-  }
-
-  void listeningOnTable(String idRoom) {
+  void listeningOnTable(String idRoom) async {
+    _currentRoom =
+        await matchService.getRoomById(idRoom); //non può mai essere null
+    _log.info("get current room $_currentRoom");
     matchService.getRoomTableInRealTime(idRoom).listen((event) {
       Map<String, dynamic> data = event.data()!; //suppongo ci sia!
       // ignore: prefer_conditional_assignment
       if (event.data() != null) {
         _currentRoom = Room.fromFirestore(data);
         tableController.add(Room.fromFirestore(data));
+        if (_currentRoom!.turno == _WIN) {
+          onWin.call();
+        }
       }
     });
   }
@@ -73,7 +82,12 @@ class BoardState extends ChangeNotifier {
         await _effects(entry);
       }
     }
-    //servizio che per ogni player aggiorna i punti
+
+    //aggiorno che non sto giocando più -> timer lancierà chageturn
+    currentPlayer.playing = false;
+    await matchService.updatePlayer(idRoom, currentPlayer);
+    //aggiorna i listeners
+    notifyListeners();
   }
 
   Future<void> _effects(MapEntry<String, Validation> entry) async {
@@ -106,6 +120,10 @@ class BoardState extends ChangeNotifier {
       case Rules.QUADRATO:
         await matchService.effettoQuadrato(idRoom, currentPlayer, _currentRoom);
         break;
+      case Rules.CUBO:
+        await matchService.effettoCubo(
+            idRoom, currentPlayer, _currentRoom, entry.value.dice, maxPlayers);
+        break;
       case Rules.PERFETTO:
         await matchService.effettoNumeroPerfetto(
             idRoom, currentPlayer, _currentRoom!, entry.value.result);
@@ -124,19 +142,26 @@ class BoardState extends ChangeNotifier {
     }
   }
 
-  //List<PlayingArea> get areas => [areaOne];
-
+  @override
   void dispose() {
-    currentPlayer.removeListener(_handlePlayed);
+    super.dispose();
     tableController.close();
   }
 
-  void _handlePlayed() {
-    //passa al turno successivo & aggiorna sul db
+  void changeTurn(String idRoom) async {
+    //servizio che per ogni player aggiorna i punti
+    await matchService.updatePoints(idRoom);
+    //servizio che verifica se c'è un vincitore
+    await matchService.winningConditions(
+        idRoom, _currentRoom!, maxPlayers, turni);
+    //se non c'è un vincitore a fine turno vai avanti
+    if (_currentRoom!.turno != -100) {
+      await matchService.updateNextPlayerByCurrentPlayer(
+          idRoom, _currentRoom!.numberOfPlayers, currentPlayer, _currentRoom!);
+    }
   }
 
-  void changeTurn(String idRoom) {
-    matchService.updateNextPlayerByCurrentPlayer(
-        idRoom, _currentRoom!.numberOfPlayers, currentPlayer, _currentRoom!);
+  Future<Player> getWinnerPlayer() async {
+    return await matchService.searchWinnerPlayer(idRoom);
   }
 }

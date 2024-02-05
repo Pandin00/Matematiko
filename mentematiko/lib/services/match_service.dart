@@ -73,7 +73,8 @@ class MatchService {
         'numeric_card': shuffled,
         'nerd_card': nerds,
         'eulero_card': eul,
-        'log': ''
+        'log': '',
+        'maxTurni': room.maxTurni,
       };
 
       await main.set(settingsData);
@@ -113,7 +114,7 @@ class MatchService {
             .doc(user.email)
             .set(p.toFirestore());
         return JoinedItem(querySnapshot.docs.first.id.toString(),
-            currentRoom.numberOfPlayers, currentRoom.time);
+            currentRoom.numberOfPlayers, currentRoom.time,currentRoom.maxTurni);
       } else {
         return JoinedItem.fromError("FULL");
       }
@@ -236,14 +237,26 @@ class MatchService {
       String type = '';
       int extracted = -1;
       int tentative = 0;
+      if (currentPlayer.cards!.isEmpty) {
+        _log.info("Multa non applicabile carte vuote!");
+        //aggiorna solamente
+        await updateRoomAndPlayer(idRoom, currentPlayer, room);
+        return;
+      }
       do {
         extracted = Random().nextInt(currentPlayer.cards!.length);
         type = currentPlayer.cards![extracted].type;
         ++tentative;
       } while (type == 'E' && tentative < 10);
 
-      if (tentative == 9) return;
-      _log.info("carta estratta ${currentPlayer.cards![extracted]}");
+      if (tentative == 9) {
+        _log.info(
+            "Multa non applicabile non è stata trovata una carta dopo 10 tentativi");
+        //aggiorna solamente
+        await updateRoomAndPlayer(idRoom, currentPlayer, room);
+        return;
+      }
+      _log.info("Multa carta estratta ${currentPlayer.cards![extracted]}");
       PlayableCards card = currentPlayer.cards!.removeAt(extracted);
       room.numericCards.add(int.parse(card.value));
 
@@ -280,7 +293,7 @@ class MatchService {
         firestore.collection('rooms').doc(idRoom).collection('players');
 
     QuerySnapshot playerInGame = await players.get();
-    int totalEntities = playerInGame.docs.length-1; //levo l'arbitro
+    int totalEntities = playerInGame.docs.length - 1; //levo l'arbitro
     int circularShift =
         (totalEntities - currentPlayer.order + 1) % totalEntities;
     var batch = firestore.batch();
@@ -310,7 +323,7 @@ class MatchService {
     if (next > maxPlayers) {
       next = 1; //ARB è 0 e non gioca
       //increase turno e decrease tutti quelli con untouchable
-      room.turno != room.turno! + 1;
+      room.turno = room.turno! + 1;
       await decreaseUntouchablesPlayers(idRoom);
     }
     //search next
@@ -325,10 +338,10 @@ class MatchService {
     Player nextPlayer = searchByOrder.docs.first.data();
     nextPlayer.playing = true;
     //aggiorna
-    await players
-        .doc(searchByOrder.docs.first.id)
-        .set(nextPlayer.toFirestore());
-    await players.doc(currentId).set(current.toFirestore());
+
+    await updateRoom(idRoom, room);
+    await updatePlayer(idRoom, nextPlayer);
+    await updatePlayer(idRoom, current);
   }
 
   Future<void> updateWhoIsPlaying(
@@ -437,7 +450,7 @@ class MatchService {
   Future<void> assignCardsFromPlate(
       String idRoom, Player player, Room room, int n) async {
     // check if there are enough cards in the piatto
-    if (room.piatto.length >= n) {
+    if (room.piatto.length > n) {
       // remove n cards from the piatto
 
       List<String> extract = room.piatto.sublist(1, n + 1);
@@ -496,7 +509,7 @@ class MatchService {
           //se il giocatore è ancora in gioco e non ha l'effetto 7
           if (otherPlayer.cards != null &&
               otherPlayer.cards!.isNotEmpty &&
-              otherPlayer.untouchable == -1) {
+              otherPlayer.untouchable == -1 || otherPlayer.untouchable == 0) {
             int extract = Random().nextInt(otherPlayer.cards!.length);
             PlayableCards lostCard = otherPlayer.cards!.removeAt(extract);
             currentPlayer.cards!.add(lostCard);
@@ -643,181 +656,117 @@ class MatchService {
   }
 
   //implementa calcolo punti
-  Future<int> calcolatePoints(String idPlayer, String idRoom) async {
+  Future<void> updatePoints(String idRoom) async {
     var players =
         firestore.collection('rooms').doc(idRoom).collection('players');
-    var playerDoc = await players.doc(idPlayer).get();
 
-    List<dynamic> updatedPlayerCards = playerDoc['cards'];
+    QuerySnapshot playerInGame = await players.get();
+    for (QueryDocumentSnapshot document in playerInGame.docs) {
+      if (document.id != 'ARB') {
+        Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+        Player p = Player.fromFirestore(data);
+        p.calculatePoints();
+        await updatePlayer(idRoom, p);
 
-    int points = 0;
-
-    for (var element in updatedPlayerCards) {
-      switch (element) {
-        case 'e':
-        case 'i':
-        case 'pi':
-        case '0':
-        case '1':
-          points += 1000;
-          break;
-        case '2':
-          points += 800;
-          break;
-        case '3':
-          points += 700;
-          break;
-        case '4':
-          points += 100;
-          break;
-        case '5':
-          points += 500;
-          break;
-        case '6':
-          points += 10;
-          break;
-        case '7':
-          points += 300;
-          break;
-        case '8':
-          points += 30;
-          break;
-        case '9':
-          points += 100;
-          break;
-        case '10':
-          points += 10;
-          break;
-        case '11':
-          points += 250;
-          break;
-        case '12':
-          points += 20;
-          break;
-        case '13':
-          points += 250;
-          break;
-        case '14':
-          points += 10;
-          break;
-        case '15':
-          points += 10;
-          break;
-        case '16':
-          points += 100;
-          break;
-        case '17':
-          points += 250;
-          break;
-        case '18':
-          points += 10;
-          break;
-        case '19':
-          points += 250;
-          break;
-        case '20':
-          points += 20;
-          break;
-        case '21':
-          points += 10;
-          break;
-        case '22':
-          points += 10;
-          break;
-        case '23':
-          points += 225;
-          break;
-        case '24':
-          points += 30;
-          break;
-        case '25':
-          points += 100;
-          break;
-        case '26':
-          points += 10;
-          break;
-        case '27':
-          points += 10;
-          break;
-        case '28':
-          points += 20;
-          break;
-        case '29':
-          points += 225;
-          break;
-        case '30':
-          points += 10;
-          break;
-        case '31':
-          points += 200;
-          break;
-        case '32':
-          points += 50;
-          break;
-        case '33':
-          points += 10;
-          break;
-        case '34':
-          points += 10;
-          break;
-        case '35':
-          points += 20;
-          break;
-        case '36':
-          points += 100;
-          break;
-        case '37':
-          points += 200;
-          break;
-        case '38':
-          points += 10;
-          break;
-        case '39':
-          points += 10;
-          break;
-        case '40':
-          points += 30;
-          break;
-        case '41':
-          points += 175;
-          break;
-        case '42':
-          points += 10;
-          break;
-        case '43':
-          points += 175;
-          break;
-        case '44':
-          points += 20;
-          break;
-        case '45':
-          points += 10;
-          break;
-        case '46':
-          points += 10;
-          break;
-        case '47':
-          points += 175;
-          break;
-        case '48':
-          points += 40;
-          break;
-        case '49':
-          points += 100;
-          break;
-        case '50':
-          points += 10;
-          break;
+        //check vittoria
       }
     }
-
-    return points;
   }
 
   Future<void> effettoQuadrato(
       String idRoom, Player currentPlayer, Room? currentRoom) async {
     currentPlayer.untouchable = 3;
     await updateRoomAndPlayer(idRoom, currentPlayer, currentRoom!);
+  }
+
+  Future<void> effettoCubo(String idRoom, Player currentPlayer,
+      Room? currentRoom, bool dice, int maxPlayers) async {
+    //setto random con un numero random
+    //al prossimo turno gioca random
+    var players =
+        firestore.collection('rooms').doc(idRoom).collection('players');
+    int next = getMyNextOrders(currentPlayer, maxPlayers)[0];
+
+    QuerySnapshot<Player> otraPlayer = await players
+        .where('order', isEqualTo: next)
+        .withConverter(
+            fromFirestore: (snapshot, _) =>
+                Player.fromFirestore(snapshot.data()!),
+            toFirestore: (player, _) => {})
+        .get();
+    if (otraPlayer.docs.isNotEmpty) {
+      Player p2 = otraPlayer.docs.first.data();
+      if (p2.cards!.isNotEmpty) {
+        p2.random = Random().nextInt(p2.cards!.length);
+        _log.info(
+            "Effetto cubo player ${p2.getDocumentId()} with order updated ${p2.order} ");
+        await updatePlayer(idRoom, p2);
+      }
+      _log.info(
+          "Effetto cubo non applicabile perché il giocatore successivo non ha carte");
+    }
+
+    await updateRoom(idRoom, currentRoom!);
+  }
+
+  Future<void> winningConditions(
+      String idRoom, Room room, int maxPlayers, int maxTurni) async {
+    var players =
+        firestore.collection('rooms').doc(idRoom).collection('players');
+
+    QuerySnapshot playerInGame = await players.get();
+    int numberDead = 0;
+
+    for (QueryDocumentSnapshot document in playerInGame.docs) {
+      if (document.id != 'ARB') {
+        Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+        Player p = Player.fromFirestore(data);
+        //check
+        if (p.cards!.isEmpty) {
+          ++numberDead;
+        }
+        //check vittoria eulero
+        if (p.haveEuleroCombo()) {
+          _log.info("Winning condition per eulero ${p.id}");
+          room.turno = -100;
+          break;
+        }
+      }
+    }
+    if (room.turno! > maxTurni) {
+      _log.info("Winning per turni ${room.turno}");
+      room.turno = -100;
+    }
+    if (numberDead == maxPlayers - 1) {
+      _log.info("Winning condition per death match");
+      room.turno = -100; //segno che c'è un vincitore death match
+    }
+
+    await updateRoom(idRoom, room);
+  }
+
+  Future<Player> searchWinnerPlayer(String idRoom) async {
+    var players =
+        firestore.collection('rooms').doc(idRoom).collection('players');
+    QuerySnapshot<Player> winner = await players
+        .orderBy('point', descending: true)
+        .limit(1)
+        .withConverter(
+            fromFirestore: (snapshot, _) =>
+                Player.fromFirestore(snapshot.data()!),
+            toFirestore: (player, _) => {})
+        .get();
+    return winner.docs.first.data();
+  }
+
+  Future<Room?> getRoomById(String idRoom) async {
+      var room = await
+        firestore.collection('rooms').doc(idRoom).get();
+
+    if(room.exists){
+       return Room.fromFirestore(room.data()!);
+    }
+    return null;
   }
 }
 
@@ -826,9 +775,10 @@ class JoinedItem {
   String? roomId;
   int? time;
   int? maxPlayers;
+  int? maxTurni;
   String? errorCode;
 
-  JoinedItem(this.roomId, this.maxPlayers, this.time) {
+  JoinedItem(this.roomId, this.maxPlayers, this.time, this.maxTurni) {
     errorCode = '';
   }
 

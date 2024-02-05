@@ -2,7 +2,7 @@ name: card
 description: A game built in Flutter.
 
 # Prevent accidental publishing to pub.dev.
-publish_to: 'none'
+publish_to: "none"
 
 version: 0.0.1+1
 
@@ -23,7 +23,7 @@ dependencies:
   shared_preferences: ^2.2.2
   firebase_core: ^2.23.0
   cloud_firestore: ^4.13.2
-  
+
 dev_dependencies:
   flutter_lints: ^3.0.0
   flutter_test:
@@ -36,12 +36,10 @@ flutter:
 
   assets:
     - assets/images/
-    - assets/cards/
-    - assets/cards/CarteNumerike/
-    - assets/cards/EulerCards/
     - assets/music/
     - assets/dice/
-    - assets/cards/
+    - assets/cards/euler/
+    - assets/cards/numerike/
 
   fonts:
     - family: Permanent Marker

@@ -2,8 +2,10 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:card/game_internals/board_state.dart';
+import 'package:card/main_menu/popup_util.dart';
 import 'package:card/models/Room.dart';
 import 'package:card/models/playable_cards.dart';
+import 'package:card/models/player.dart';
 import 'package:card/models/rules_validation_result.dart';
 import 'package:card/services/rules_service.dart';
 import 'package:flutter/material.dart';
@@ -104,7 +106,7 @@ class _PlayingAreaWidgetState extends State<PlayingAreaWidget> {
                           selections.add(Rules.DIVISIBILE);
                         } else {
                           selections.remove(Rules.DIVISIBILE);
-                        }                      
+                        }
                       }
                     });
                   },
@@ -317,12 +319,11 @@ class _PlayingAreaWidgetState extends State<PlayingAreaWidget> {
             }),
             ElevatedButton(
               onPressed: () {
-                
                 if (widget._boardState.currentPlayer.playing) {
                   //aggiorna localmente e ritorna le azioni/errori
-                  RulesValidationResult result =
-                      data.holder.playCard(data.card, selections, widget._boardState.getCurrentRoom());
-                     widget._boardState.applyEffects(result);
+                  RulesValidationResult result = data.holder.playCard(data.card,
+                      selections, widget._boardState.getCurrentRoom()!);
+                  widget._boardState.applyEffects(result);
                 }
                 //chiama board_start per eseguire gli effetti e le operazioni su db
                 Navigator.pop(context);
@@ -342,6 +343,16 @@ class _PlayingAreaWidgetState extends State<PlayingAreaWidget> {
 
   bool _onDragWillAccept(PlayingCardDragData? data) {
     if (data == null) return false;
+    //sotto l'effetto di cubo (rule10)
+    if (data.holder.random != -1 ){
+       Player p=data.holder;
+       if(p.cards![p.random!]!=data.card){
+         //obbligo di gioco
+         PopupUtil.showPopup(context: context, title: 'Obbligo causa CUBO', content: 'Sei obbligato a giocare la carta ${p.cards![p.random!].value}');
+         return false;
+       }
+      return true;
+    }
     setState(() => isHighlighted = true);
     return true;
   }
@@ -364,7 +375,7 @@ class _PlayingAreaWidgetState extends State<PlayingAreaWidget> {
                   for (int j = 0; j < numCardsPerRow; j++)
                     if (i * numCardsPerRow + j < cards.length)
                       Container(
-                        child: Image.network(
+                        child: Image.asset(
                           cards[i * numCardsPerRow + j].rendering(),
                           height: 110,
                           width: 100,
